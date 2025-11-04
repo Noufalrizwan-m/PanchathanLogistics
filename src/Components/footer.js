@@ -67,9 +67,9 @@ const Footer = () => (
 
         {/* Contact & Socials */}
         <div>
-          <h4 className="text-lg font-bold text-[#175d29] mb-4">Head Office</h4>
+          <h4 className="text-lg font-bold text-[#175d29] mb-4">Contact us</h4>
           <p className="text-sm text-gray-500">Email: info@panchathanlogistics.com</p>
-          <p className="text-sm text-gray-500 mb-4">Phone: +91 73394 33590</p>
+          <p className="text-sm text-gray-500 mb-4">Phone: +91 73394 33590, +91 95147 53332</p>
           <div className="flex space-x-4 mt-2">
             <a
               href="https://www.facebook.com/profile.php?id=100066693142443"

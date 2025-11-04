@@ -53,7 +53,10 @@ const About = () => {
                             The Indian Heart of Global Logistics
                         </h2>
                         <p className="text-base sm:text-lg md:text-lg text-gray-700 mb-4 sm:mb-6">
-                            Established in 2019 in Chennai, Panchathan Logistics Pvt. Ltd. was founded on the Indian principle that the customer is God and service is our highest duty.
+                            Established in 2019 in Chennai, Panchathan Logistics Pvt. Ltd. was founded on the Indian principle that the customer is God and 
+                            service is our highest duty. From humble beginnings, we’ve grown step by step, grounded in reliability, trust, and a personal touch 
+                            often missing in large logistics corporations. 
+                            Our mission is simple: to move your business forward with precision, care, and integrity.
                         </p>
                         <p className="text-base sm:text-lg md:text-lg text-gray-700 border-l-4 border-amber-500 pl-4 italic">
                             Our mission isn’t to be the largest in logistics, but to be the most trusted partner behind every successful delivery. <br />

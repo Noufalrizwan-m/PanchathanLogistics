@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import PageHero from '../Components/pagehero';
 import { useSearchParams } from 'react-router-dom';
-import { Hash, Search, Clock, MapPin, Plane, Truck, CheckCircle, Package, Clipboard, Check, Copy } from 'lucide-react';
+import { Hash, Search, Clock, MapPin, Plane, Truck, CheckCircle, Package, Download, Clipboard, Check, Copy } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-// --- Constants ---
 const COLORS = {
     primary: "#175d29",
     secondary: "#f9a825",
@@ -12,7 +11,6 @@ const COLORS = {
 
 const PROGRESS_STEPS = ['BOOKED', 'PICKED_UP', 'IN_TRANSIT', 'WAREHOUSE_CLEARANCE', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
-// --- Helper Functions ---
 const getStatusColorClass = (status) => {
     const s = status ? status.toUpperCase() : '';
     switch (s) {
@@ -24,7 +22,7 @@ const getStatusColorClass = (status) => {
         case 'PICKED_UP':
             return 'bg-green-700 text-white border-green-700';
         case 'BOOKED':
-            return 'bg-gray-400 text-white border-gray-400';
+            return 'bg-green-700 text-white border-green-700';
         default: return 'bg-gray-500 text-white border-gray-500';
     }
 };
@@ -37,8 +35,11 @@ const getStatusLabel = (status) => {
 /**
  * Returns a short label for small screens.
  */
+ 
 const getShortStatusLabel = (status) => {
-    const s = status ? status.toUpperCase() : '';
+    let s = status ? status : ''; // Corrected: Assign status to s first
+    s = s.toUpperCase();           // Then call toUpperCase()
+
     switch (s) {
         case 'BOOKED': return 'Booked';
         case 'PICKED_UP': return 'Picked';
@@ -46,7 +47,7 @@ const getShortStatusLabel = (status) => {
         case 'WAREHOUSE_CLEARANCE': return 'W.Clearance';
         case 'OUT_FOR_DELIVERY': return 'O.F.D';
         case 'DELIVERED': return 'Delivered';
-        default: return getStatusLabel(status);
+        default: return getStatusLabel(s);
     }
 };
 
@@ -57,34 +58,34 @@ const getServiceIcon = (service) => {
     return Truck;
 };
 
-// (mapApiStatusToFriendlyStatus function remains the same)
 const mapApiStatusToFriendlyStatus = (apiStatus, apiRemark, apiLocation) => {
     const statusUpper = (apiStatus || '').toUpperCase().trim();
     const locationUpper = (apiLocation || '').toUpperCase().trim();
     const remarkUpper = (apiRemark || '').toUpperCase().trim();
-
-    if (statusUpper.includes('DELIVERED') || statusUpper.includes('DLY') || statusUpper.includes('DLV') || statusUpper.includes('PROOF_OF_DELIVERY')) {
-        return 'DELIVERED';
+    // Prioritize BOOKED as it's the initial state
+    // Added 'PENDING' as it often implies a booked but not yet picked up status.
+    if (statusUpper.includes('BOOKED') || statusUpper.includes('CREATED') || remarkUpper.includes('CREATED') || locationUpper.includes('BRANCH') || statusUpper.includes('INSERTED') || statusUpper.includes('PENDING')) {
+        return 'BOOKED';
     }
-
-    if (statusUpper.includes('OUT_FOR_DELIVERY') || statusUpper.includes('OFD') || statusUpper.includes('DO') || statusUpper.includes('DELIVERY_OUT') || statusUpper.includes('DRS')) {
-        return 'OUT_FOR_DELIVERY';
-    }
-
-    if (statusUpper.includes('CUSTOMS') || statusUpper.includes('CLEARED') || statusUpper.includes('HELD') || statusUpper.includes('WAREHOUSE') || statusUpper.includes('TRANSIT_CLEARANCE')) {
-        return 'WAREHOUSE_CLEARANCE';
+    if (statusUpper.includes('PICKED_UP') || statusUpper.includes('PU') || statusUpper.includes('RECEIVED') || statusUpper.includes('RCV') || statusUpper.includes('MANIFESTED')) {
+        return 'PICKED_UP';
     }
 
     if (statusUpper.includes('IN_TRANSIT') || statusUpper.includes('TRN') || statusUpper.includes('DEPARTED') || statusUpper.includes('MOVING') || statusUpper.includes('FORWARDED') || statusUpper.includes('FWD')) {
         return 'IN_TRANSIT';
     }
 
-    if (statusUpper.includes('PICKED_UP') || statusUpper.includes('PU') || statusUpper.includes('RECEIVED') || statusUpper.includes('RCV') || statusUpper.includes('MANIFESTED')) {
-        return 'PICKED_UP';
+    // Check for Warehouse Clearance before general in-transit if it's a specific phase
+    if (statusUpper.includes('CUSTOMS') || statusUpper.includes('CLEARED') || statusUpper.includes('HELD') || statusUpper.includes('WAREHOUSE') || statusUpper.includes('TRANSIT_CLEARANCE')) {
+        return 'WAREHOUSE_CLEARANCE';
     }
 
-    if (statusUpper.includes('BOOKED') || statusUpper.includes('CREATED') || remarkUpper.includes('CREATED') || locationUpper.includes('BRANCH') || statusUpper.includes('INSERTED')) {
-        return 'BOOKED';
+    if (statusUpper.includes('OUT_FOR_DELIVERY') || statusUpper.includes('OFD') || statusUpper.includes('DO') || statusUpper.includes('DELIVERY_OUT') || statusUpper.includes('DRS')) {
+        return 'OUT_FOR_DELIVERY';
+    }
+
+    if (statusUpper.includes('DELIVERED') || statusUpper.includes('DLY') || statusUpper.includes('DLV') || statusUpper.includes('PROOF_OF_DELIVERY')) {
+        return 'DELIVERED';
     }
 
     return getStatusLabel(apiStatus || 'UNKNOWN').toUpperCase().replace(/ /g, '_');
@@ -99,60 +100,56 @@ const TrackingProgressBar = ({ currentStatus, progressSteps }) => {
     const currentStepIndex = progressSteps.findIndex(step => step === currentStatus);
     const stepsCount = progressSteps.length;
 
-    // Fix: Calculate progress percentage to stop at the center of the current status dot.
     let progressPercentage = 0;
     if (currentStepIndex >= 0) {
-        // Each step represents a segment of the bar. The full bar is 100%.
-        // The bar itself runs from the start of the first dot to the end of the last dot.
-        // We'll calculate the center of the current dot.
-        if (stepsCount > 1) {
-            // Factor to represent the center of the dot relative to the step's space.
-            const centerFactor = 1 / (stepsCount - 1.2);
-            progressPercentage = (currentStepIndex * centerFactor) * 100;
-        } else {
-            progressPercentage = 100; // Only one step
-        }
+        progressPercentage = (currentStepIndex / (stepsCount - 1)) * 100;
+        if (isNaN(progressPercentage)) progressPercentage = 0;
     }
 
     return (
         <div className="mb-12">
             <div className="relative pt-1">
-                {/* Progress Line */}
-                <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
+                {/* Background Line */}
+                <div className="h-2 mb-4 text-xs flex rounded-full bg-gray-200">
+                    {/* Filled Progress Line */}
                     <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${progressPercentage}%` }}
                         transition={{ duration: 1.5, ease: "easeOut" }}
                         style={{ backgroundColor: COLORS.primary }}
-                        className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center`}
+                        className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center rounded-full`}
                     ></motion.div>
                 </div>
 
-                {/* Status Dots and Labels */}
-                <div className="flex justify-between -mt-7">
+                {/* Status Dots and Labels - Absolute positioning for precise placement */}
+                <div className="absolute w-full top-1 flex justify-between -mt-1">
                     {progressSteps.map((step, index) => {
                         const isCurrent = step === currentStatus;
                         const isCompleted = index <= currentStepIndex;
-                        // The 'completed' status for the progress line is anything up to the center of the 'current' dot
-                        // But for the *dot* itself, we treat it as 'completed' if it's the current or a past step.
+                        // const isBookedOrDeliveredEndpoint = step === 'BOOKED' || step === 'DELIVERED'; // We will remove this for coloring decisions
+
+                        const leftPosition = (index / (stepsCount - 1)) * 100;
+                        if (isNaN(leftPosition)) return null;
 
                         return (
                             <div
                                 key={step}
-                                className={`flex flex-col items-center flex-1`}
+                                className={`absolute flex flex-col items-center transform -translate-x-1/2`}
+                                style={{ left: `${leftPosition}%` }}
                             >
                                 <motion.div
                                     initial={{ scale: 0 }}
-                                    animate={{ scale: isCompleted ? 1 : 0.7 }}
+                                    animate={{ scale: isCompleted ? 1 : 0.7 }} // Only scale up if completed
                                     transition={{ duration: 0.5, delay: 0.5 }}
-                                    className={`w-4 h-4 rounded-full border-2 ${isCompleted ? 'border-white' : 'border-gray-300'
-                                        } ${isCompleted ? getStatusColorClass(step).split(' ')[0] : 'bg-white'} shadow-md`}
-                                    // Adjust margin to center the dots over the progress line segment points
-                                    style={{
-                                        // The flex-1 class handles the spacing, no need for manual margin offsets on first/last
-                                    }}
-                                />
-                                {/* Labels: Use short label on mobile (text-[10px]) and full label on larger screens (sm:text-xs) */}
+                                    className={`w-4 h-4 rounded-full border-2 shadow-md
+                                        ${isCompleted // Only green if completed
+                                            ? 'border-white ' + getStatusColorClass(step).split(' ')[0]
+                                            : 'border-gray-300 bg-white' // Otherwise, gray border and white background
+                                        }
+                                    `}
+                                >
+                                </motion.div>
+                                {/* Labels: Adjust top margin to place them below the dot */}
                                 <span
                                     className={`text-[10px] mt-2 font-semibold whitespace-nowrap ${isCurrent ? 'text-gray-900' : 'text-gray-500'
                                         } block sm:hidden`}
@@ -177,8 +174,6 @@ const TrackingProgressBar = ({ currentStatus, progressSteps }) => {
     );
 };
 
-// (The rest of the component remains the same)
-
 const Tracking = () => {
     const [searchParams] = useSearchParams();
     const initialAwb = String(searchParams.get('awb') || searchParams.get('data') || '').trim();
@@ -187,81 +182,61 @@ const Tracking = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [copySuccess, setCopySuccess] = useState(false);
-    const [isCopied, setIsCopied] = useState(false);
-   // --- Helper Functions ---
-// (Keep getStatusColorClass, getStatusLabel, etc. as they are)
+    const [podUrl, setPodUrl] = useState(null);
 
-// ... inside the Tracking component function ...
 
-const copyTextToClipboard = (text) => {
-    // 1. Try the modern Clipboard API
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        return navigator.clipboard.writeText(text);
-    }
-
-    // 2. Fallback using document.execCommand('copy') for older/mobile compatibility
-    let textArea;
-    try {
-        textArea = document.createElement("textarea");
-        textArea.value = text;
-        
-        // Hide the element visually
-        textArea.style.position = "fixed";
-        textArea.style.top = "0";
-        textArea.style.left = "0";
-        textArea.style.opacity = "0";
-
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-
-        let successful = document.execCommand('copy');
-        if (!successful) {
-            throw new Error('Fallback copying unsuccessful');
+    const copyTextToClipboard = (text) => {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            return navigator.clipboard.writeText(text);
         }
-        return Promise.resolve();
-    } catch (err) {
-        console.error('Fallback: Oops, unable to copy', err);
-        return Promise.reject(err);
-    } finally {
-        if (textArea && textArea.parentNode) {
-            textArea.parentNode.removeChild(textArea);
+
+        let textArea;
+        try {
+            textArea = document.createElement("textarea");
+            textArea.value = text;
+
+            textArea.style.position = "fixed";
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.opacity = "0";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            let successful = document.execCommand('copy');
+            if (!successful) {
+                throw new Error('Fallback copying unsuccessful');
+            }
+            return Promise.resolve();
+        } catch (err) {
+            console.error('Fallback: Oops, unable to copy', err);
+            return Promise.reject(err);
+        } finally {
+            if (textArea && textArea.parentNode) {
+                textArea.parentNode.removeChild(textArea);
+            }
         }
-    }
-};
-
-const onCopyAwb = useCallback(async (text) => {
-    try {
-        await copyTextToClipboard(text);
-        setCopySuccess(true);
-        setTimeout(() => setCopySuccess(false), 2000);
-    } catch (err) {
-        // If both modern API and fallback fail
-        console.error('Failed to copy text: ', err);
-        // Optionally, show a toast/message to the user asking them to manually copy
-    }
-}, []);
-
-// The `handleCopyAwb` is not used in the JSX but if it were, it'd need similar logic.
-// However, the JSX already uses `onCopyAwb(trackingData.awb)`, so we can remove the unused `handleCopyAwb` and `isCopied` state to clean up.
-// Remove `handleCopyAwb` and `isCopied` from your component state and logic for cleanup.
-// I'll keep the rest of your original component structure and only replace the necessary parts.
-    const formatDateOnly = (dateTimeStr) => {
-        if (!dateTimeStr || typeof dateTimeStr !== 'string') return 'N/A';
-        return dateTimeStr.split(' ')[0];
     };
 
-    const handleCopyAwb = useCallback(() => {
-        if (trackingData && trackingData.awb) {
-            navigator.clipboard.writeText(trackingData.awb).then(() => {
-                setIsCopied(true);
-                setTimeout(() => setIsCopied(false), 2000);
-            }).catch(err => {
-                console.error('Failed to copy text: ', err);
-            });
+    const onCopyAwb = useCallback(async (text) => {
+        try {
+            await copyTextToClipboard(text);
+            setCopySuccess(true);
+            setTimeout(() => setCopySuccess(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
         }
-    }, [trackingData]);
+    }, []);
 
+    const formatDateOnly = (dateTimeStr) => {
+        if (!dateTimeStr || typeof dateTimeStr !== 'string') return 'N/A';
+        const datePart = dateTimeStr.split(' ')[0];
+        if (datePart && datePart.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            return datePart;
+        }
+        return 'N/A';
+    };
 
     const fetchTrackingData = async (queryAwb) => {
         const trimmedAwb = String(queryAwb).trim();
@@ -274,6 +249,7 @@ const onCopyAwb = useCallback(async (text) => {
         setLoading(true);
         setError(null);
         setTrackingData(null);
+        setPodUrl(null); // Reset POD URL on new search
 
         try {
             const payload = [trimmedAwb];
@@ -301,7 +277,6 @@ const onCopyAwb = useCallback(async (text) => {
             const apiResult = responseData.data[0];
 
             let detail = apiResult.details?.[0] || {};
-            let summaries = apiResult.summary?.[0] || {};
             const summary = apiResult.summary || [];
 
             detail = {
@@ -312,16 +287,14 @@ const onCopyAwb = useCallback(async (text) => {
                 src_point: apiResult.Origin || detail.Origin || detail.src_point,
                 dest_point: apiResult.dest_point || detail.dest_point || 'N/A',
                 current_location: apiResult.wh_storage_location_name || detail.wh_storage_location_name || 'N/A',
-
                 expected_delivery_date: apiResult.deliverydate || detail.deliverydate,
-
                 carton_count: apiResult.total_carton || detail.total_box || detail.carton_no || summary[0]?.total_box || summary[0]?.carton_no || 'N/A',
-                shipment_weight: apiResult.total_weight || detail.carton_weight || summary[0]?.carton_weight || 'N/A',
+                pod_url: apiResult.pod_link || apiResult.proof_of_delivery_url || detail.pod_link || null,
+                // shipment_weight: apiResult.total_weight || detail.carton_weight || summary[0]?.carton_weight || 'N/A',
             };
 
-
             if (Object.keys(detail).length > 0) {
-                const timelineEvents = summary.slice().reverse().map(event => ({
+                let timelineEvents = summary.map(event => ({
                     friendlyStatus: mapApiStatusToFriendlyStatus(event.opr_mode, event.remark, event.src_point),
                     status: event.opr_mode,
                     date: event.transit_date,
@@ -329,6 +302,31 @@ const onCopyAwb = useCallback(async (text) => {
                     location: event.dest_point,
                     note: event.remark || null,
                 }));
+
+                const hasBookedEvent = timelineEvents.some(event => event.friendlyStatus === 'BOOKED');
+                if (!hasBookedEvent && detail.cnote_no) {
+                    const earliestEventDate = timelineEvents.length > 0 ? timelineEvents[0].date : formatDateOnly(new Date().toISOString());
+                    const earliestEventTime = timelineEvents.length > 0 ? timelineEvents[0].time : '00:00:00';
+
+                    timelineEvents.unshift({
+                        friendlyStatus: 'BOOKED',
+                        status: 'BOOKED',
+                        date: earliestEventDate,
+                        time: earliestEventTime,
+                        location: detail.src_point || 'N/A',
+                        note: 'Shipment booked and confirmed',
+                    });
+                }
+
+                timelineEvents.sort((a, b) => {
+                    const dateA = new Date(`${a.date || ''} ${a.time || '00:00:00'}`);
+                    const dateB = new Date(`${b.date || ''} ${b.time || '00:00:00'}`);
+
+                    if (isNaN(dateA.getTime())) return 1;
+                    if (isNaN(dateB.getTime())) return -1;
+
+                    return dateA.getTime() - dateB.getTime();
+                });
 
                 const transformedData = {
                     status: 'UNKNOWN',
@@ -343,9 +341,10 @@ const onCopyAwb = useCallback(async (text) => {
                     shipment_weight: detail.shipment_weight,
 
                     progressSteps: PROGRESS_STEPS,
-                    timeline: timelineEvents,
+                    timeline: timelineEvents, // Use the sorted timeline events
                 };
 
+                // Determine the latest overall status based on the sorted timeline
                 if (transformedData.timeline.length > 0) {
                     const stepRanks = PROGRESS_STEPS.reduce((acc, step, idx) => {
                         acc[step] = idx;
@@ -353,7 +352,7 @@ const onCopyAwb = useCallback(async (text) => {
                     }, {});
 
                     let maxStepIndex = -1;
-                    let latestStatus = 'BOOKED';
+                    let latestStatus = 'BOOKED'; // Default to BOOKED if no events or higher status found
 
                     transformedData.timeline.forEach(event => {
                         const idx = stepRanks[event.friendlyStatus];
@@ -365,10 +364,17 @@ const onCopyAwb = useCallback(async (text) => {
 
                     transformedData.status = latestStatus;
                 } else {
+                    // Fallback if no timeline events exist, use current status from detail
                     transformedData.status = mapApiStatusToFriendlyStatus(detail.current_status_desc, null, detail.current_location);
                 }
 
                 setTrackingData(transformedData);
+                // Set POD URL if available and status is DELIVERED
+                if (transformedData.status === 'DELIVERED' && detail.pod_url) {
+                    setPodUrl(detail.pod_url);
+                } else {
+                    setPodUrl(null);
+                }
             } else {
                 setError("AWB tracking data not found or is incomplete.");
             }
@@ -388,7 +394,9 @@ const onCopyAwb = useCallback(async (text) => {
     const handleSearch = (e) => {
         e.preventDefault();
         if (awb) {
-            window.history.pushState(null, '', `/tracking?awb=${awb}`);
+            const newSearchParams = new URLSearchParams(searchParams);
+            newSearchParams.set('awb', awb);
+            window.history.replaceState(null, '', `?${newSearchParams.toString()}`);
             fetchTrackingData(awb);
         }
     };
@@ -397,6 +405,7 @@ const onCopyAwb = useCallback(async (text) => {
         if (initialAwb) {
             fetchTrackingData(initialAwb);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialAwb]);
 
 
@@ -405,6 +414,7 @@ const onCopyAwb = useCallback(async (text) => {
 
         const isAir = service && service.toLowerCase().includes("air");
 
+        // If not air cargo, remove WAREHOUSE_CLEARANCE from the timeline display
         if (!isAir) {
             return timeline.filter(event => event.friendlyStatus !== 'WAREHOUSE_CLEARANCE');
         }
@@ -413,6 +423,8 @@ const onCopyAwb = useCallback(async (text) => {
     };
 
     const filteredTimeline = useMemo(() => {
+        // `trackingData.timeline` is already chronologically sorted.
+        // `getFilteredTimeline` applies any service-specific filters.
         return trackingData ? getFilteredTimeline(trackingData.timeline, trackingData.service) : [];
     }, [trackingData]);
 
@@ -468,7 +480,7 @@ const onCopyAwb = useCallback(async (text) => {
                         transition={{ repeat: Infinity, ease: 'linear', duration: 20 }}
                     >
                         <span className="mr-12">
-                            ⚠️ Beware of fraudulent calls or messages! Panch    athan Logistics will never ask for your personal details or payment outside official channels. Always verify before sharing information.
+                            ⚠️ Beware of fraudulent calls or messages! Panchathan Logistics will never ask for your personal details or payment outside official channels. Always verify before sharing information.
                         </span>
                         <span className="mr-12">
                             ⚠️ Beware of fraudulent calls or messages! Panchathan Logistics will never ask for your personal details or payment outside official channels. Always verify before sharing information.
@@ -517,10 +529,24 @@ const onCopyAwb = useCallback(async (text) => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="text-right w-full md:w-auto">
-                                <span className={`px-3 py-1 md:px-4 md:py-2 text-white font-extrabold rounded-lg text-sm md:text-lg shadow-md ${getStatusColorClass(trackingData.status)}`}>
+                            <div className="flex flex-col items-end w-full md:w-auto">
+                                <span className={`px-3 py-1 md:px-4 md:py-2 text-white font-extrabold rounded-lg text-sm md:text-lg shadow-md ${getStatusColorClass(trackingData.status)} mb-2`}>
                                     {getStatusLabel(trackingData.status)}
                                 </span>
+                                {/* POD Download Button */}
+                                {trackingData.status === 'DELIVERED' && podUrl && (
+                                    <motion.a
+                                        href={podUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        className="inline-flex items-center px-4 py-2 bg-green-700 text-white font-semibold rounded-lg shadow-md hover:bg-green-800 transition-colors duration-300 text-sm md:text-base mt-2"
+                                    >
+                                        <Download className="w-4 h-4 mr-2" />
+                                        Download POD
+                                    </motion.a>
+                                )}
                             </div>
                         </div>
 
@@ -529,7 +555,7 @@ const onCopyAwb = useCallback(async (text) => {
                             progressSteps={PROGRESS_STEPS}
                         />
 
-                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-6 text-center my-8 md:my-12">
+                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6 text-center my-8 md:my-12">
                             {[
                                 {
                                     icon: MapPin,
@@ -556,11 +582,11 @@ const onCopyAwb = useCallback(async (text) => {
                                     label: 'No. of Cartons',
                                     value: trackingData.carton_count
                                 },
-                                {
-                                    icon: Package,
-                                    label: 'Total WGT. (Kg)',
-                                    value: `${trackingData.shipment_weight} Kg`
-                                },
+                                // {
+                                //     icon: Package,
+                                //     label: 'Total WGT. (Kg)',
+                                //     value: `${trackingData.shipment_weight} Kg`
+                                // },
 
                             ].map((item, i) => (
                                 <motion.div
@@ -570,7 +596,7 @@ const onCopyAwb = useCallback(async (text) => {
                                     transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
                                     className="p-3 md:p-4 border border-gray-200 rounded-xl bg-gray-50 hover:shadow-lg transition-shadow duration-300"
                                 >
-                                    <item.icon className={`w-6 h-6 md:w-7 md:h-7 mx-auto mb-2`} style={{ color: COLORS.secondary }} />
+                                    <item.icon className={`w-6 h-6 md:w-12 md:h-7 mx-auto mb-2`} style={{ color: COLORS.secondary }} />
                                     <p className="text-xs md:text-sm text-gray-500 uppercase font-semibold">{item.label}</p>
                                     <p className="text-base md:text-lg font-bold text-gray-800 break-words">{item.value}</p>
                                 </motion.div>
@@ -585,8 +611,9 @@ const onCopyAwb = useCallback(async (text) => {
                             ></div>
 
                             {filteredTimeline.length > 0 ? (
-                                // Display timeline in chronological order (oldest first, down to latest)
-                                filteredTimeline.map((event, i) => { // Removed .reverse() here
+                                // Display timeline in reverse chronological order (latest first)
+                                // Create a copy of the array before reversing to avoid mutating the original
+                                [...filteredTimeline].map((event, i) => {
                                     const isCurrent = event.friendlyStatus === trackingData.status;
 
                                     return (

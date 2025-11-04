@@ -20,7 +20,7 @@ function App() {
   return (
     <Router>
       <Header />
-      <main className="min-h-screen pt-20"> {/* pt-20 compensates for fixed header height */}
+      <main className="min-h-screen pt-20"> 
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/tracking" element={<Tracking />} />
