@@ -1,110 +1,186 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import PageHero from '../Components/pagehero';
+import PageHero from '../Components/pagehero'; // Assuming this component exists
 import { useSearchParams } from 'react-router-dom';
-import { Hash, Search, Clock, MapPin, Plane, Truck, CheckCircle, Package, Download, Clipboard, Check, Copy } from 'lucide-react';
+import {
+    Hash,
+    Search,
+    Clock,
+    MapPin,
+    Plane,
+    Truck,
+    CheckCircle,
+    Package,
+    Download,
+    Copy
+} from 'lucide-react';
 import { motion } from 'framer-motion';
+import axios from 'axios';
 
+// --- Configuration Constants ---
 const COLORS = {
-    primary: "#175d29",
-    secondary: "#f9a825",
+    primary: "#175d29", // Dark green
+    secondary: "#f9a825", // Amber
 };
 
-const PROGRESS_STEPS = ['BOOKED', 'PICKED_UP', 'IN_TRANSIT', 'WAREHOUSE_CLEARANCE', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+// Simplified and ordered progress steps as requested
+const PROGRESS_STEPS = ['BOOKED', 'IN_TRANSIT', 'WAREHOUSE_CLEARANCE', 'OUT_FOR_DELIVERY', 'DELIVERED'];
 
+// Base URL for your tracking API
+const API_BASE_URL = "https://panchathanlogistics.com/billing_php/index.php/multi_tracking_web";
+// Base URL for your tracking API
+const POD_API_BASE_URL = "https://panchathanlogistics.com/billing_php/index.php/get_pod_image"; // New POD API Base URL
+// --- Utility Functions ---
+
+/**
+ * Maps an API status to a simplified, display-friendly status.
+ * This function consolidates multiple API statuses into the defined PROGRESS_STEPS.
+ * @param {string} apiStatus The primary status from the API.
+ * @param {string} apiRemark Additional remarks from the API.
+ * @param {string} apiLocation Location info from the API.
+ * @returns {string} One of 'BOOKED', 'IN_TRANSIT', 'WAREHOUSE_CLEARANCE', 'OUT_FOR_DELIVERY', 'DELIVERED', or 'UNKNOWN'.
+ */
+const mapApiStatusToFriendlyStatus = (apiStatus, apiRemark, apiLocation) => {
+    const statusUpper = (apiStatus || '').toUpperCase().trim();
+    const remarkUpper = (apiRemark || '').toUpperCase().trim();
+    const locationUpper = (apiLocation || '').toUpperCase().trim();
+
+    // BOOKED status
+    if (statusUpper.includes('BOOKED') || statusUpper.includes('CREATED') || remarkUpper.includes('CREATED') || locationUpper.includes('BRANCH') || statusUpper.includes('INSERTED') || statusUpper.includes('PENDING')) {
+        return 'BOOKED';
+    }
+
+    // IN_TRANSIT status (combines various transit, pickup, and warehouse/customs states)
+    if (statusUpper.includes('PICKED_UP') || statusUpper.includes('PU') || statusUpper.includes('RECEIVED') || statusUpper.includes('RCV') || statusUpper.includes('MANIFESTED') ||
+        statusUpper.includes('IN_TRANSIT') || statusUpper.includes('TRN') || statusUpper.includes('DEPARTED') || statusUpper.includes('MOVING') || statusUpper.includes('FORWARDED') || statusUpper.includes('FWD') ||
+        statusUpper.includes('TRANSIT_CLEARANCE') || statusUpper.includes('ARRIVAL')) {
+        return 'IN_TRANSIT';
+    }
+
+    // WAREHOUSE_CLEARANCE status - New status
+    if (statusUpper.includes('CUSTOMS') || statusUpper.includes('CLEARED') || statusUpper.includes('HELD') || statusUpper.includes('WAREHOUSE') || statusUpper.includes('WH_STORAGE')) {
+        return 'WAREHOUSE_CLEARANCE';
+    }
+
+    // OUT_FOR_DELIVERY status
+    if (statusUpper.includes('OUT_FOR_DELIVERY') || statusUpper.includes('OFD') || statusUpper.includes('DO') || statusUpper.includes('DELIVERY_OUT') || statusUpper.includes('DRS')) {
+        return 'OUT_FOR_DELIVERY';
+    }
+
+    // DELIVERED status
+    if (statusUpper.includes('DELIVERED') || statusUpper.includes('DLY') || statusUpper.includes('DLV') || statusUpper.includes('PROOF_OF_DELIVERY')) {
+        return 'DELIVERED';
+    }
+
+    return 'UNKNOWN'; // Fallback for unmapped statuses
+};
+
+/**
+ * Returns a CSS class string for status-specific coloring.
+ * @param {string} status One of the friendly statuses.
+ * @returns {string} Tailwind CSS classes for background, text, and border color.
+ */
 const getStatusColorClass = (status) => {
-    const s = status ? status.toUpperCase() : '';
-    switch (s) {
+    switch (status) {
         case 'DELIVERED': return 'bg-green-600 text-white border-green-600';
         case 'OUT_FOR_DELIVERY': return 'bg-amber-500 text-white border-amber-500';
-        case 'IN_TRANSIT':
-        case 'WAREHOUSE_CLEARANCE':
-            return 'bg-blue-600 text-white border-blue-600';
-        case 'PICKED_UP':
-            return 'bg-green-700 text-white border-green-700';
-        case 'BOOKED':
-            return 'bg-green-700 text-white border-green-700';
-        default: return 'bg-gray-500 text-white border-gray-500';
+        case 'Warehouse Clearance': return 'bg-amber-500 text-white border-amber-500';
+        case 'IN_TRANSIT': return 'bg-blue-600 text-white border-blue-600';
+        case 'BOOKED': return 'bg-green-700 text-white border-green-700';
+        default: return 'bg-gray-500 text-white border-gray-500'; // UNKNOWN
     }
 };
 
+/**
+ * Returns a human-readable label for a given status.
+ * @param {string} status The status (e.g., 'OUT_FOR_DELIVERY').
+ * @returns {string} Formatted label (e.g., 'Out For Delivery').
+ */
 const getStatusLabel = (status) => {
     if (!status || typeof status !== "string") return "Unknown";
     return status.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
 };
 
 /**
- * Returns a short label for small screens.
+ * Returns a short label for display on small screens.
+ * @param {string} status The status.
+ * @returns {string} A shortened label.
  */
- 
 const getShortStatusLabel = (status) => {
-    let s = status ? status : ''; // Corrected: Assign status to s first
-    s = s.toUpperCase();           // Then call toUpperCase()
-
-    switch (s) {
+    switch (status) {
         case 'BOOKED': return 'Booked';
-        case 'PICKED_UP': return 'Picked';
         case 'IN_TRANSIT': return 'In Transit';
-        case 'WAREHOUSE_CLEARANCE': return 'W.Clearance';
+        case 'Warehouse Clearance': return 'WFC';
         case 'OUT_FOR_DELIVERY': return 'O.F.D';
         case 'DELIVERED': return 'Delivered';
-        default: return getStatusLabel(s);
+        default: return getStatusLabel(status);
     }
 };
 
+/**
+ * Returns the appropriate Lucide icon component based on service type.
+ * @param {string} service The service type (e.g., 'Air Cargo', 'Road Freight').
+ * @returns {React.Component} Lucide icon component.
+ */
 const getServiceIcon = (service) => {
-    if (service && service.toLowerCase().includes("air")) {
-        return Plane;
-    }
-    return Truck;
+    return service && service.toLowerCase().includes("air") ? Plane : Truck;
 };
 
-const mapApiStatusToFriendlyStatus = (apiStatus, apiRemark, apiLocation) => {
-    const statusUpper = (apiStatus || '').toUpperCase().trim();
-    const locationUpper = (apiLocation || '').toUpperCase().trim();
-    const remarkUpper = (apiRemark || '').toUpperCase().trim();
-    // Prioritize BOOKED as it's the initial state
-    // Added 'PENDING' as it often implies a booked but not yet picked up status.
-    if (statusUpper.includes('BOOKED') || statusUpper.includes('CREATED') || remarkUpper.includes('CREATED') || locationUpper.includes('BRANCH') || statusUpper.includes('INSERTED') || statusUpper.includes('PENDING')) {
-        return 'BOOKED';
-    }
-    if (statusUpper.includes('PICKED_UP') || statusUpper.includes('PU') || statusUpper.includes('RECEIVED') || statusUpper.includes('RCV') || statusUpper.includes('MANIFESTED')) {
-        return 'PICKED_UP';
-    }
-
-    if (statusUpper.includes('IN_TRANSIT') || statusUpper.includes('TRN') || statusUpper.includes('DEPARTED') || statusUpper.includes('MOVING') || statusUpper.includes('FORWARDED') || statusUpper.includes('FWD')) {
-        return 'IN_TRANSIT';
-    }
-
-    // Check for Warehouse Clearance before general in-transit if it's a specific phase
-    if (statusUpper.includes('CUSTOMS') || statusUpper.includes('CLEARED') || statusUpper.includes('HELD') || statusUpper.includes('WAREHOUSE') || statusUpper.includes('TRANSIT_CLEARANCE')) {
-        return 'WAREHOUSE_CLEARANCE';
-    }
-
-    if (statusUpper.includes('OUT_FOR_DELIVERY') || statusUpper.includes('OFD') || statusUpper.includes('DO') || statusUpper.includes('DELIVERY_OUT') || statusUpper.includes('DRS')) {
-        return 'OUT_FOR_DELIVERY';
-    }
-
-    if (statusUpper.includes('DELIVERED') || statusUpper.includes('DLY') || statusUpper.includes('DLV') || statusUpper.includes('PROOF_OF_DELIVERY')) {
-        return 'DELIVERED';
-    }
-
-    return getStatusLabel(apiStatus || 'UNKNOWN').toUpperCase().replace(/ /g, '_');
+/**
+ * Formats a date-time string to display only the date part (YYYY-MM-DD).
+ * @param {string} dateTimeStr The date-time string.
+ * @returns {string} Formatted date or 'N/A'.
+ */
+const formatDateOnly = (dateTimeStr) => {
+    if (!dateTimeStr || typeof dateTimeStr !== 'string') return 'N/A';
+    const datePart = dateTimeStr.split(' ')[0];
+    return datePart && /^\d{4}-\d{2}-\d{2}$/.test(datePart) ? datePart : 'N/A';
 };
 
+/**
+ * Copies text to the clipboard using the modern Clipboard API, with a fallback.
+ * @param {string} text The text to copy.
+ * @returns {Promise<void>} A promise that resolves if successful, rejects otherwise.
+ */
+const copyTextToClipboard = async (text) => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text);
+    }
+    // Fallback for older browsers
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed"; // Avoid scrolling to bottom
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+        const successful = document.execCommand('copy');
+        if (!successful) throw new Error('Fallback copying unsuccessful');
+    } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+        throw err;
+    } finally {
+        document.body.removeChild(textArea);
+    }
+};
 
-// --- Components ---
+// --- Sub-Components ---
 
+/**
+ * Displays a visual progress bar with status dots.
+ * @param {object} props
+ * @param {string} props.currentStatus The current friendly status.
+ * @param {string[]} props.progressSteps An array of friendly status strings defining the steps.
+ */
 const TrackingProgressBar = ({ currentStatus, progressSteps }) => {
     if (!progressSteps || progressSteps.length === 0) return null;
 
     const currentStepIndex = progressSteps.findIndex(step => step === currentStatus);
     const stepsCount = progressSteps.length;
 
-    let progressPercentage = 0;
-    if (currentStepIndex >= 0) {
-        progressPercentage = (currentStepIndex / (stepsCount - 1)) * 100;
-        if (isNaN(progressPercentage)) progressPercentage = 0;
-    }
+    const progressPercentage = currentStepIndex >= 0
+        ? (currentStepIndex / (stepsCount - 1)) * 100
+        : 0;
 
     return (
         <div className="mb-12">
@@ -117,39 +193,34 @@ const TrackingProgressBar = ({ currentStatus, progressSteps }) => {
                         animate={{ width: `${progressPercentage}%` }}
                         transition={{ duration: 1.5, ease: "easeOut" }}
                         style={{ backgroundColor: COLORS.primary }}
-                        className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center rounded-full`}
+                        className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center rounded-full"
                     ></motion.div>
                 </div>
 
-                {/* Status Dots and Labels - Absolute positioning for precise placement */}
+                {/* Status Dots and Labels */}
                 <div className="absolute w-full top-1 flex justify-between -mt-1">
                     {progressSteps.map((step, index) => {
                         const isCurrent = step === currentStatus;
                         const isCompleted = index <= currentStepIndex;
-                        // const isBookedOrDeliveredEndpoint = step === 'BOOKED' || step === 'DELIVERED'; // We will remove this for coloring decisions
-
                         const leftPosition = (index / (stepsCount - 1)) * 100;
-                        if (isNaN(leftPosition)) return null;
 
                         return (
                             <div
                                 key={step}
-                                className={`absolute flex flex-col items-center transform -translate-x-1/2`}
+                                className="absolute flex flex-col items-center transform -translate-x-1/2"
                                 style={{ left: `${leftPosition}%` }}
                             >
                                 <motion.div
                                     initial={{ scale: 0 }}
-                                    animate={{ scale: isCompleted ? 1 : 0.7 }} // Only scale up if completed
+                                    animate={{ scale: isCompleted ? 1 : 0.7 }}
                                     transition={{ duration: 0.5, delay: 0.5 }}
                                     className={`w-4 h-4 rounded-full border-2 shadow-md
-                                        ${isCompleted // Only green if completed
+                                        ${isCompleted
                                             ? 'border-white ' + getStatusColorClass(step).split(' ')[0]
-                                            : 'border-gray-300 bg-white' // Otherwise, gray border and white background
+                                            : 'border-gray-300 bg-white'
                                         }
                                     `}
-                                >
-                                </motion.div>
-                                {/* Labels: Adjust top margin to place them below the dot */}
+                                ></motion.div>
                                 <span
                                     className={`text-[10px] mt-2 font-semibold whitespace-nowrap ${isCurrent ? 'text-gray-900' : 'text-gray-500'
                                         } block sm:hidden`}
@@ -168,106 +239,132 @@ const TrackingProgressBar = ({ currentStatus, progressSteps }) => {
                         );
                     })}
                 </div>
-
             </div>
         </div>
     );
 };
 
+// Base URL for your tracking API
 const Tracking = () => {
     const [searchParams] = useSearchParams();
-    const initialAwb = String(searchParams.get('awb') || searchParams.get('data') || '').trim();
+    const initialAwb = useMemo(() => String(searchParams.get('awb') || searchParams.get('data') || '').trim(), [searchParams]);
     const [awb, setAwb] = useState(initialAwb);
     const [trackingData, setTrackingData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [copySuccess, setCopySuccess] = useState(false);
     const [podUrl, setPodUrl] = useState(null);
-
-
-    const copyTextToClipboard = (text) => {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            return navigator.clipboard.writeText(text);
-        }
-
-        let textArea;
-        try {
-            textArea = document.createElement("textarea");
-            textArea.value = text;
-
-            textArea.style.position = "fixed";
-            textArea.style.top = "0";
-            textArea.style.left = "0";
-            textArea.style.opacity = "0";
-
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-
-            let successful = document.execCommand('copy');
-            if (!successful) {
-                throw new Error('Fallback copying unsuccessful');
-            }
-            return Promise.resolve();
-        } catch (err) {
-            console.error('Fallback: Oops, unable to copy', err);
-            return Promise.reject(err);
-        } finally {
-            if (textArea && textArea.parentNode) {
-                textArea.parentNode.removeChild(textArea);
-            }
-        }
+    const [podAvailable, setPodAvailable] = useState(false);
+    const [checkingPod, setCheckingPod] = useState(false);
+    /**
+         * Converts a Base64 string to a Blob object.
+         * @param {string} base64 The Base64 string (e.g., 'data:image/jpeg;base64,...' or just 'iVBORw0KGgo...').
+         * @param {string} mimeType The MIME type of the data (e.g., 'image/jpeg').
+         * @returns {Blob} A Blob object.
+         */
+    const base64ToBlob = (base64, mimeType = "image/jpeg") => {
+        // Remove data URI prefix if present
+        const base64WithoutPrefix = base64.startsWith('data:') ? base64.split(',')[1] : base64;
+        const byteCharacters = atob(base64WithoutPrefix);
+        const byteNumbers = new Array(byteCharacters.length)
+            .fill(0)
+            .map((_, i) => byteCharacters.charCodeAt(i));
+        const byteArray = new Uint8Array(byteNumbers);
+        return new Blob([byteArray], { type: mimeType });
     };
+    /**
+     * Handles fetching and decoding the POD image.
+     */
+    useEffect(() => {
+        const fetchAndDecodePOD = async () => {
+            // Only try to fetch POD if tracking data and AWB are available, and the shipment is DELIVERED
+            if (!trackingData?.awb || trackingData.status !== 'DELIVERED') {
+                setPodUrl(null); // Clear POD if AWB is missing or not delivered
+                return;
+            }
 
-    const onCopyAwb = useCallback(async (text) => {
+            setCheckingPod(true); // Indicate that we are checking for POD
+            try {
+                // Make a GET request to your POD API endpoint with the AWB number
+                const response = await axios.get(`${POD_API_BASE_URL}?inv_no=${trackingData.awb}`);
+
+                // Check if the API returned a successful status and data
+                if (response.data && response.data.status === "success" && response.data.data) {
+                    const base64Data = response.data.data;
+                    // Infer MIME type from the Base64 string or default to 'image/jpeg'
+                    const mimeType = base64Data.startsWith('data:image/') ? base64Data.split(';')[0].split(':')[1] : 'image/jpeg';
+
+                    // Convert Base64 string to Blob
+                    const blob = base64ToBlob(base64Data, mimeType);
+                    // Create an object URL for the Blob
+                    const url = URL.createObjectURL(blob);
+                    setPodUrl(url); // Store the URL in state
+                } else {
+                    console.warn("POD API did not return valid image data:", response.data);
+                    setPodUrl(null); // Clear POD URL if data is invalid
+                }
+            } catch (err) {
+                console.error("Error fetching or decoding POD:", err);
+                setPodUrl(null); // Clear POD URL on error
+            } finally {
+                setCheckingPod(false); // Finish checking
+            }
+        };
+
+        fetchAndDecodePOD();
+
+        // Cleanup function for object URL to prevent memory leaks
+        return () => {
+            if (podUrl) {
+                URL.revokeObjectURL(podUrl);
+            }
+        };
+    }, [trackingData?.awb, trackingData?.status, podUrl]); // Dependencies: Re-run when AWB, status, or podUrl changes
+    /**
+     * Handles copying the AWB number to the clipboard.
+     * @param {string} text The AWB number to copy.
+     */
+    const handleCopyAwb = useCallback(async (text) => {
         try {
             await copyTextToClipboard(text);
             setCopySuccess(true);
-            setTimeout(() => setCopySuccess(false), 2000);
+            setTimeout(() => setCopySuccess(false), 2000); // Reset copy success message after 2 seconds
         } catch (err) {
-            console.error('Failed to copy text: ', err);
+            console.error('Failed to copy text:', err);
         }
     }, []);
 
-    const formatDateOnly = (dateTimeStr) => {
-        if (!dateTimeStr || typeof dateTimeStr !== 'string') return 'N/A';
-        const datePart = dateTimeStr.split(' ')[0];
-        if (datePart && datePart.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            return datePart;
-        }
-        return 'N/A';
-    };
-
-    const fetchTrackingData = async (queryAwb) => {
+    /**
+     * Fetches tracking data from the API.
+     * @param {string} queryAwb The AWB number to track.
+     */
+    const fetchTrackingData = useCallback(async (queryAwb) => {
         const trimmedAwb = String(queryAwb).trim();
         if (!trimmedAwb) {
             setError(null);
             setTrackingData(null);
+            setPodUrl(null);
             return;
         }
 
         setLoading(true);
         setError(null);
         setTrackingData(null);
-        setPodUrl(null); // Reset POD URL on new search
+        setPodUrl(null);
 
         try {
-            const payload = [trimmedAwb];
-            const response = await fetch(
-                "https://panchathanlogistics.com/billing_php/index.php/multi_tracking_web",
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload),
-                }
-            );
+            const response = await fetch(API_BASE_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify([trimmedAwb]), // API expects an array
+            });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}. Could not reach tracking server.`);
+                const errorText = await response.text(); // Get raw error message
+                throw new Error(`HTTP error! Status: ${response.status}. Details: ${errorText || 'Could not reach tracking server.'}`);
             }
 
             const responseData = await response.json();
-            console.log("API Response:", responseData);
 
             if (responseData.status === "failed" || !responseData.data || responseData.data.length === 0) {
                 setError(typeof responseData.data === 'string' ? responseData.data : "AWB tracking data not found. Please double-check the number.");
@@ -275,162 +372,168 @@ const Tracking = () => {
             }
 
             const apiResult = responseData.data[0];
-
             let detail = apiResult.details?.[0] || {};
             const summary = apiResult.summary || [];
 
-            detail = {
-                ...detail,
+            // Consolidate 'detail' object with potentially missing fields
+            const consolidatedDetail = {
                 cnote_no: apiResult.invoice_no || detail.invoice_no,
                 current_status_desc: apiResult.current_status || detail.current_status,
-                transit_type_name: apiResult.transit_type_name || detail.transit_type_name,
-                src_point: apiResult.Origin || detail.Origin || detail.src_point,
+                transit_type_name: apiResult.transit_type_name || detail.transit_type_name || 'N/A',
+                src_point: apiResult.Origin || detail.Origin || detail.src_point || 'N/A',
                 dest_point: apiResult.dest_point || detail.dest_point || 'N/A',
                 current_location: apiResult.wh_storage_location_name || detail.wh_storage_location_name || 'N/A',
-                expected_delivery_date: apiResult.deliverydate || detail.deliverydate,
-                carton_count: apiResult.total_carton || detail.total_box || detail.carton_no || summary[0]?.total_box || summary[0]?.carton_no || 'N/A',
+                expected_delivery_date: apiResult.deliverydate || detail.deliverydate || 'N/A',
+                carton_count: detail.total_carton || 'N/A',
                 pod_url: apiResult.pod_link || apiResult.proof_of_delivery_url || detail.pod_link || null,
-                // shipment_weight: apiResult.total_weight || detail.carton_weight || summary[0]?.carton_weight || 'N/A',
+                shipment_weight: apiResult.total_weight || detail.carton_weight || 'N/A', // Assuming a field for weight
             };
 
-            if (Object.keys(detail).length > 0) {
-                let timelineEvents = summary.map(event => ({
-                    friendlyStatus: mapApiStatusToFriendlyStatus(event.opr_mode, event.remark, event.src_point),
-                    status: event.opr_mode,
-                    date: event.transit_date,
-                    time: event.transit_time,
-                    location: event.dest_point,
-                    note: event.remark || null,
-                }));
+            // Map API summary events to friendly timeline events
+            let timelineEvents = summary.map(event => ({
+                friendlyStatus: mapApiStatusToFriendlyStatus(event.opr_mode, event.remark, event.src_point),
+                originalStatus: event.opr_mode, // Keep original for debugging if needed
+                date: event.transit_date,
+                time: event.transit_time,
+                location: event.dest_point,
+                note: event.remark || null,
+            }));
 
-                const hasBookedEvent = timelineEvents.some(event => event.friendlyStatus === 'BOOKED');
-                if (!hasBookedEvent && detail.cnote_no) {
-                    const earliestEventDate = timelineEvents.length > 0 ? timelineEvents[0].date : formatDateOnly(new Date().toISOString());
-                    const earliestEventTime = timelineEvents.length > 0 ? timelineEvents[0].time : '00:00:00';
-
-                    timelineEvents.unshift({
-                        friendlyStatus: 'BOOKED',
-                        status: 'BOOKED',
-                        date: earliestEventDate,
-                        time: earliestEventTime,
-                        location: detail.src_point || 'N/A',
-                        note: 'Shipment booked and confirmed',
-                    });
-                }
-
-                timelineEvents.sort((a, b) => {
-                    const dateA = new Date(`${a.date || ''} ${a.time || '00:00:00'}`);
-                    const dateB = new Date(`${b.date || ''} ${b.time || '00:00:00'}`);
-
-                    if (isNaN(dateA.getTime())) return 1;
-                    if (isNaN(dateB.getTime())) return -1;
-
-                    return dateA.getTime() - dateB.getTime();
+            // Ensure a 'BOOKED' event is always present at the earliest recorded time
+            const hasBookedEvent = timelineEvents.some(event => event.friendlyStatus === 'BOOKED');
+            if (!hasBookedEvent && consolidatedDetail.cnote_no) {
+                const earliestExistingEvent = timelineEvents[0];
+                timelineEvents.unshift({
+                    friendlyStatus: 'BOOKED',
+                    originalStatus: 'BOOKED',
+                    date: earliestExistingEvent?.date || formatDateOnly(new Date().toISOString()),
+                    time: earliestExistingEvent?.time || '00:00:00',
+                    location: consolidatedDetail.src_point,
+                    note: 'Shipment booked and confirmed',
                 });
-
-                const transformedData = {
-                    status: 'UNKNOWN',
-                    awb: detail.cnote_no || 'N/A',
-                    service: detail.transit_type_name || 'N/A',
-                    destination: detail.wh_storage_location_name || 'N/A',
-                    origin: detail.src_point || 'N/A',
-                    current_location: detail.current_location || 'N/A',
-                    estimated_delivery: detail.expected_delivery_date || 'N/A',
-
-                    carton_count: detail.carton_count,
-                    shipment_weight: detail.shipment_weight,
-
-                    progressSteps: PROGRESS_STEPS,
-                    timeline: timelineEvents, // Use the sorted timeline events
-                };
-
-                // Determine the latest overall status based on the sorted timeline
-                if (transformedData.timeline.length > 0) {
-                    const stepRanks = PROGRESS_STEPS.reduce((acc, step, idx) => {
-                        acc[step] = idx;
-                        return acc;
-                    }, {});
-
-                    let maxStepIndex = -1;
-                    let latestStatus = 'BOOKED'; // Default to BOOKED if no events or higher status found
-
-                    transformedData.timeline.forEach(event => {
-                        const idx = stepRanks[event.friendlyStatus];
-                        if (idx !== undefined && idx > maxStepIndex) {
-                            maxStepIndex = idx;
-                            latestStatus = event.friendlyStatus;
-                        }
-                    });
-
-                    transformedData.status = latestStatus;
-                } else {
-                    // Fallback if no timeline events exist, use current status from detail
-                    transformedData.status = mapApiStatusToFriendlyStatus(detail.current_status_desc, null, detail.current_location);
-                }
-
-                setTrackingData(transformedData);
-                // Set POD URL if available and status is DELIVERED
-                if (transformedData.status === 'DELIVERED' && detail.pod_url) {
-                    setPodUrl(detail.pod_url);
-                } else {
-                    setPodUrl(null);
-                }
-            } else {
-                setError("AWB tracking data not found or is incomplete.");
             }
+
+            // Sort timeline events chronologically (oldest first)
+            timelineEvents.sort((a, b) => {
+                const dateA = new Date(`${a.date || ''} ${a.time || '00:00:00'}`);
+                const dateB = new Date(`${b.date || ''} ${b.time || '00:00:00'}`);
+                return dateA.getTime() - dateB.getTime();
+            });
+
+            // Determine the current overall status based on the latest event that maps to a progress step
+            let currentOverallStatus = 'BOOKED'; // Default
+            const stepRanks = PROGRESS_STEPS.reduce((acc, step, idx) => ({ ...acc, [step]: idx }), {});
+
+            timelineEvents.forEach(event => {
+                const stepIndex = stepRanks[event.friendlyStatus];
+                if (stepIndex !== undefined && stepIndex > stepRanks[currentOverallStatus]) {
+                    currentOverallStatus = event.friendlyStatus;
+                }
+            });
+
+            const transformedData = {
+                status: currentOverallStatus,
+                awb: consolidatedDetail.cnote_no,
+                service: consolidatedDetail.transit_type_name,
+                destination: detail.wh_storage_location_name || 'N/A', // Use consolidatedDetail for consistency
+                origin: consolidatedDetail.src_point,
+                current_location: consolidatedDetail.current_location,
+                estimated_delivery: consolidatedDetail.expected_delivery_date,
+                carton_count: consolidatedDetail.carton_count,
+                shipment_weight: consolidatedDetail.shipment_weight,
+                progressSteps: PROGRESS_STEPS,
+                timeline: timelineEvents,
+            };
+
+            setTrackingData(transformedData);
+
+            if (transformedData.status?.toLowerCase() === 'delivered') {
+                // Even if pod_url is null, still set it (to allow button display)
+                setPodUrl(consolidatedDetail?.pod_url || null);
+                console.log("✅ Delivered! POD URL (may be null):", consolidatedDetail?.pod_url);
+            } else {
+                setPodUrl(null);
+            }
+
+
 
         } catch (err) {
             console.error("Tracking API Error:", err);
-            setError(
-                err.message ||
-                "Failed to fetch tracking details due to a network or parsing error."
-            );
+            setError(err.message || "Failed to fetch tracking details due to a network or parsing error.");
         } finally {
             setLoading(false);
         }
-    };
+    }, []); // Empty dependency array for useCallback, as its dependencies are stable
 
-
-    const handleSearch = (e) => {
+    /**
+     * Handles the form submission for AWB search.
+     * @param {Event} e The form submit event.
+     */
+    const handleSearchSubmit = useCallback((e) => {
         e.preventDefault();
         if (awb) {
-            const newSearchParams = new URLSearchParams(searchParams);
+            const newSearchParams = new URLSearchParams();
             newSearchParams.set('awb', awb);
+            // Update URL without a full page reload
             window.history.replaceState(null, '', `?${newSearchParams.toString()}`);
             fetchTrackingData(awb);
         }
-    };
+    }, [awb, fetchTrackingData]);
 
+    // Effect to fetch data on initial load if AWB is present in URL
     useEffect(() => {
         if (initialAwb) {
             fetchTrackingData(initialAwb);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [initialAwb]);
+    }, [initialAwb, fetchTrackingData]);
 
+    /**
+     * Filters and prepares the timeline for display.
+     * It ensures unique events per `PROGRESS_STEPS` are shown, using the latest for each.
+     */
+    const filteredTimelineForDisplay = useMemo(() => {
+        if (!trackingData?.timeline) return [];
 
-    const getFilteredTimeline = (timeline, service) => {
-        if (!timeline || timeline.length === 0) return [];
+        // Create a map to store the latest event for each friendly status
+        const latestEventPerFriendlyStatus = new Map();
 
-        const isAir = service && service.toLowerCase().includes("air");
+        // Iterate through all events (already sorted chronologically)
+        trackingData.timeline.forEach(event => {
+            const friendlyStatus = event.friendlyStatus;
+            if (PROGRESS_STEPS.includes(friendlyStatus)) { // Only consider events relevant to our progress steps
+                const existingEvent = latestEventPerFriendlyStatus.get(friendlyStatus);
 
-        // If not air cargo, remove WAREHOUSE_CLEARANCE from the timeline display
-        if (!isAir) {
-            return timeline.filter(event => event.friendlyStatus !== 'WAREHOUSE_CLEARANCE');
-        }
+                if (!existingEvent) {
+                    // If no event for this status yet, add it
+                    latestEventPerFriendlyStatus.set(friendlyStatus, event);
+                } else {
+                    // If an event for this status exists, compare and keep the latest
+                    const existingDateTime = new Date(`${existingEvent.date} ${existingEvent.time}`);
+                    const currentDateTime = new Date(`${event.date} ${event.time}`);
+                    if (currentDateTime > existingDateTime) {
+                        latestEventPerFriendlyStatus.set(friendlyStatus, event);
+                    }
+                }
+            }
+        });
 
-        return timeline;
-    };
+        // Convert the map values back to an array
+        const processedEvents = Array.from(latestEventPerFriendlyStatus.values());
 
-    const filteredTimeline = useMemo(() => {
-        // `trackingData.timeline` is already chronologically sorted.
-        // `getFilteredTimeline` applies any service-specific filters.
-        return trackingData ? getFilteredTimeline(trackingData.timeline, trackingData.service) : [];
-    }, [trackingData]);
+        // Sort these processed events according to the order of PROGRESS_STEPS
+        processedEvents.sort((a, b) => {
+            const indexA = PROGRESS_STEPS.indexOf(a.friendlyStatus);
+            const indexB = PROGRESS_STEPS.indexOf(b.friendlyStatus);
+            return indexA - indexB;
+        });
+
+        return processedEvents;
+    }, [trackingData?.timeline]);
 
 
     return (
         <div className="bg-gray-50 min-h-screen">
+            {/* Page Hero Section */}
             <PageHero
                 title="Real-Time Shipment Tracking"
                 subtitle="Your cargo's journey, visible every step of the way. Instant, global visibility."
@@ -438,8 +541,9 @@ const Tracking = () => {
             />
 
             <section className="py-16 md:py-24 px-4 md:px-12 max-w-7xl mx-auto">
+                {/* AWB Search Form */}
                 <motion.form
-                    onSubmit={handleSearch}
+                    onSubmit={handleSearchSubmit}
                     initial={{ opacity: 0, y: -50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.1 }}
@@ -469,9 +573,9 @@ const Tracking = () => {
                     </motion.button>
                 </motion.form>
 
-                {loading && <p className={`mt-12 text-center text-xl font-bold`} style={{ color: COLORS.primary }}>Fetching the latest updates...</p>}
+                {/* Loading, Error, and Fraud Awareness Messages */}
+                {loading && <p className="mt-12 text-center text-xl font-bold" style={{ color: COLORS.primary }}>Fetching the latest updates...</p>}
                 {error && <p className="mt-12 text-center text-red-600 font-medium p-4 bg-red-50 rounded-xl max-w-xl mx-auto border-l-4 border-red-500">{error}</p>}
-                {/* Seamless Fraud Awareness Marquee */}
                 <div className="overflow-hidden relative w-full rounded-lg my-8">
                     <motion.div
                         className="flex whitespace-nowrap py-2 font-semibold text-red-600"
@@ -488,6 +592,7 @@ const Tracking = () => {
                     </motion.div>
                 </div>
 
+                {/* Tracking Data Display */}
                 {trackingData && (
                     <motion.div
                         initial={{ opacity: 0, y: 50 }}
@@ -495,6 +600,7 @@ const Tracking = () => {
                         transition={{ duration: 0.8, delay: 0.3 }}
                         className="mt-12 md:mt-16 bg-white rounded-2xl shadow-3xl p-6 md:p-10 border border-gray-100"
                     >
+                        {/* Header: Tracking ID & Current Status */}
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 md:pb-6 mb-6 md:mb-8 border-b border-gray-100">
                             <div className="flex items-center mb-4 md:mb-0">
                                 {React.createElement(getServiceIcon(trackingData.service), {
@@ -510,7 +616,7 @@ const Tracking = () => {
                                         <motion.button
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.9 }}
-                                            onClick={() => onCopyAwb(trackingData.awb)}
+                                            onClick={() => handleCopyAwb(trackingData.awb)}
                                             className={`p-1 rounded-full transition-colors duration-200 ${copySuccess ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                                             aria-label="Copy Tracking ID"
                                         >
@@ -533,23 +639,27 @@ const Tracking = () => {
                                 <span className={`px-3 py-1 md:px-4 md:py-2 text-white font-extrabold rounded-lg text-sm md:text-lg shadow-md ${getStatusColorClass(trackingData.status)} mb-2`}>
                                     {getStatusLabel(trackingData.status)}
                                 </span>
-                                {/* POD Download Button */}
+                                {/* Display POD button only if podUrl is available and status is DELIVERED */}
                                 {trackingData.status === 'DELIVERED' && podUrl && (
-                                    <motion.a
-                                        href={podUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                    <motion.button
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
-                                        className="inline-flex items-center px-4 py-2 bg-green-700 text-white font-semibold rounded-lg shadow-md hover:bg-green-800 transition-colors duration-300 text-sm md:text-base mt-2"
+                                        onClick={() => window.open(podUrl, "_blank")} // Open the decoded POD URL
+                                        className="flex items-center gap-2 bg-[#175d29] text-white px-4 py-2 rounded-xl shadow hover:bg-green-700 transition-all"
                                     >
-                                        <Download className="w-4 h-4 mr-2" />
-                                        Download POD
-                                    </motion.a>
+                                        <Download size={18} />
+                                        View POD
+                                    </motion.button>
+                                )}
+                                {/* Show status messages for POD when delivered */}
+                                {trackingData.status === 'DELIVERED' && !podUrl && checkingPod && (
+                                    <p className="text-sm text-gray-500">Checking for POD...</p>
+                                )}
+                                {trackingData.status === 'DELIVERED' && !podUrl && !checkingPod && (
+                                    <p className="text-sm text-gray-500">POD not available.</p>
                                 )}
                             </div>
                         </div>
-
                         <TrackingProgressBar
                             currentStatus={trackingData.status}
                             progressSteps={PROGRESS_STEPS}
@@ -557,78 +667,87 @@ const Tracking = () => {
 
                         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6 text-center my-8 md:my-12">
                             {[
-                                {
-                                    icon: MapPin,
-                                    label: 'Origin',
-                                    value: String(trackingData.origin || 'N/A').toUpperCase()
-                                },
-                                {
-                                    icon: MapPin,
-                                    label: 'Destination',
-                                    value: String(trackingData.destination || 'N/A').toUpperCase()
-                                },
-                                {
-                                    icon: Clock,
-                                    label: 'EDD',
-                                    value: formatDateOnly(trackingData.estimated_delivery)
-                                },
-                                {
-                                    icon: Package,
-                                    label: 'Service Type',
-                                    value: trackingData.service
-                                },
-                                {
-                                    icon: Package,
-                                    label: 'No. of Cartons',
-                                    value: trackingData.carton_count
-                                },
-                                // {
-                                //     icon: Package,
-                                //     label: 'Total WGT. (Kg)',
-                                //     value: `${trackingData.shipment_weight} Kg`
-                                // },
+                                { icon: MapPin, label: 'Origin', value: String(trackingData.origin).toUpperCase() },
+                                { icon: MapPin, label: 'Destination', value: String(trackingData.destination).toUpperCase() },
+                                { icon: Clock, label: 'EDD', value: formatDateOnly(trackingData.estimated_delivery) },
+                                { icon: Package, label: 'Service Type', value: trackingData.service },
+                                { icon: Package, label: 'No. of Cartons', value: trackingData.carton_count },
 
+                                // POD Button within the grid - ALWAYS visible if podUrl exists
+                                // ...(podUrl ? [{
+                                //     icon: Download, // Using Download icon for consistency
+                                //     label: 'Proof of Delivery',
+                                // The value is a React component (the link itself)
+                                //     value: (
+                                //         <motion.a
+                                //             href={podUrl}
+                                //             target="_blank"
+                                //             rel="noopener noreferrer"
+                                //             whileHover={{ scale: 1.05 }}
+                                //             whileTap={{ scale: 0.95 }}
+                                //             className="inline-flex items-center text-green-700 hover:text-green-800 font-semibold transition-colors duration-300 text-sm md:text-base"
+                                //         >
+                                //             <Download className="w-4 h-4 mr-1" /> View POD
+                                //         </motion.a>
+                                //     ),
+                                //     isComponent: true // Flag to indicate value is a component
+                                // }] : [])
+                                // Uncomment if you have shipment_weight data
+                                // { icon: Package, label: 'Total WGT. (Kg)', value: `${trackingData.shipment_weight} Kg` },
                             ].map((item, i) => (
                                 <motion.div
                                     key={i}
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
-                                    className="p-3 md:p-4 border border-gray-200 rounded-xl bg-gray-50 hover:shadow-lg transition-shadow duration-300"
+                                    className="p-3 md:p-4 border border-gray-200 rounded-xl bg-gray-50 hover:shadow-lg transition-shadow duration-300 flex flex-col items-center justify-center" // Added flex for centering
                                 >
-                                    <item.icon className={`w-6 h-6 md:w-12 md:h-7 mx-auto mb-2`} style={{ color: COLORS.secondary }} />
-                                    <p className="text-xs md:text-sm text-gray-500 uppercase font-semibold">{item.label}</p>
-                                    <p className="text-base md:text-lg font-bold text-gray-800 break-words">{item.value}</p>
+                                    {item.isComponent ? ( // Check if the item's value is a React component
+                                        <>
+                                            {item.icon && <item.icon className={`w-6 h-6 md:w-12 md:h-7 mx-auto mb-2`} style={{ color: COLORS.secondary }} />}
+                                            <p className="text-xs md:text-sm text-gray-500 uppercase font-semibold">{item.label}</p>
+                                            {item.value} {/* Render the component directly */}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {item.icon && <item.icon className={`w-6 h-6 md:w-12 md:h-7 mx-auto mb-2`} style={{ color: COLORS.secondary }} />}
+                                            <p className="text-xs md:text-sm text-gray-500 uppercase font-semibold">{item.label}</p>
+                                            <p className="text-base md:text-lg font-bold text-gray-800 break-words">{item.value}</p>
+                                        </>
+                                    )}
                                 </motion.div>
                             ))}
                         </div>
 
-                        <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-6 md:mb-8 border-b pb-2">Shipment History </h3>
+                        {/* Shipment History Timeline */}
+                        <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-6 md:mb-8 border-b pb-2">Shipment History</h3>
                         <div className="relative">
+                            {/* Vertical timeline line */}
                             <div
                                 className="absolute left-3 top-0 bottom-0 w-1 rounded-full"
                                 style={{ backgroundColor: COLORS.primary }}
                             ></div>
 
-                            {filteredTimeline.length > 0 ? (
-                                // Display timeline in reverse chronological order (latest first)
-                                // Create a copy of the array before reversing to avoid mutating the original
-                                [...filteredTimeline].map((event, i) => {
+                            {filteredTimelineForDisplay.length > 0 ? (
+                                // Reverse to show latest events at the top
+                                [...filteredTimelineForDisplay].reverse().map((event, i) => {
                                     const isCurrent = event.friendlyStatus === trackingData.status;
 
                                     return (
                                         <motion.div
-                                            key={i}
+                                            key={`${event.friendlyStatus}-${i}`} // More robust key
                                             initial={{ opacity: 0, x: -30 }}
                                             animate={{ opacity: 1, x: 0 }}
                                             transition={{ duration: 0.6, delay: 0.5 + i * 0.1 }}
                                             className="mb-6 relative pl-10 md:pl-14"
                                         >
+                                            {/* Timeline dot */}
                                             <div
                                                 className={`absolute left-0 top-1 w-6 h-6 md:w-8 md:h-8 rounded-full border-4 border-white flex items-center justify-center ${getStatusColorClass(event.friendlyStatus)} shadow-lg`}
                                             >
                                                 <CheckCircle className="w-3 h-3 md:w-4 md:h-4 text-white" />
                                             </div>
+                                            {/* Event card */}
                                             <div
                                                 className={`p-4 rounded-xl transition-all duration-300 border border-gray-200 ${isCurrent
                                                     ? 'bg-indigo-50 shadow-md border-l-4 border-green-800'
@@ -677,4 +796,4 @@ const Tracking = () => {
     );
 };
 
-export default Tracking;
+export default Tracking;    
