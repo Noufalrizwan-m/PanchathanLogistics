@@ -2,108 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .animate-marquee {
-    animation: marquee 10s linear infinite;
+@layer base {
+  html {
+    color-scheme: light;
+    scroll-behavior: smooth;
   }
-
-  @keyframes marquee {
-    0% { transform: translateX(100%); }
-    100% { transform: translateX(-20%); }
+  body {
+    @apply font-titillium text-gray-800 bg-white;
+  }
+  h1, h2, h3, h4 {
+    @apply font-sora;
   }
 }
 
-
-
-/* Location Marker Base Style */
-.location-marker {
-    width: 15px;
-    height: 15px;
-    background-color: #175d29; /* Primary marker color */
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 10;
-    /* Center the marker based on its own dimensions */
-    margin-left: -10px; 
-    margin-top: -10px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+/* Custom cursor: only hide the native cursor when the follower is active
+   (desktop, fine pointer) — never on touch devices. */
+.cursor-none-active,
+.cursor-none-active * {
+  cursor: none !important;
 }
 
-/* Branch Positioning - Adjust these percentages to align with your specific India.png image */
-/* These are absolute coordinates relative to the .india-map-section container */
-.location-marker.kerala { top: 95%; left: 30%; }
-.location-marker.tamilnadu { top: 90%; left: 35%; }
-.location-marker.bangalore { top: 75%; left: 28%; }
-.location-marker.hyderabad { top: 68%; left: 40%; }
-.location-marker.mumbai { top: 50%; left: 15%; }
-.location-marker.kolkata { top: 50%; left: 65%; }
-.location-marker.delhi { top: 35%; left: 35%; }
-
-
-/* Pulse Animation Effect */
-.pulse {
-    width: 100%;
-    height: 100%;
-    background: #175d29;
-    border-radius: 50%;
-    position: absolute;
-    animation: pulse-animate 2s infinite;
-    opacity: 0.8;
+/* Infinite marquee: track is rendered twice back-to-back, translating by
+   exactly -50% loops seamlessly with no visible seam/jump. */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
-@keyframes pulse-animate {
-    0% {
-        transform: scale(1);
-        opacity: 0.7;
-    }
-    100% {
-        transform: scale(3.5);
-        opacity: 0;
-    }
+/* Section-wise scroll snap, site-wide. scroll-padding-top clears the
+   fixed floating pill nav so a snapped section isn't hidden under it. */
+html {
+  scroll-snap-type: y mandatory;
+  scroll-padding-top: 96px;
 }
-
-/* Location Popup Display Control */
-
-/* Default popup: top-centered */
-.location-popup {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-bottom: 8px;
-    background: #ffffff;
-    color: #333333;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    border: 1px solid #e5e5e5;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-    white-space: pre-wrap;
-     min-width: 180px;
-    max-width: 250px;
+/* Opted out of by pages that pin sections with GSAP ScrollTrigger (e.g.
+   Home) — mandatory scroll-snap fights a pinned element's scroll tracking. */
+html.no-snap {
+  scroll-snap-type: none;
 }
-
-/* Show popup on hover */
-.location-marker:hover .location-popup {
-    opacity: 1;
-    pointer-events: auto;
+.snap-section {
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
 }
-
-/* Special popup for Tamil Nadu (on right of marker) */
-.location-marker.tamilnadu .location-popup {
-    bottom: auto;        /* remove top positioning */
-    top: 50%;            /* center vertically */
-    left: 120%;          /* move to the right of marker */
-    transform: translateY(-50%); /* vertically center */
-}
-
-/* Kerala popup on left with arrow pointing right */
-.location-marker.kerala .location-popup {
-    bottom: auto;
-    top: 50%;           /* vertically center */
-    right: 120%;         /* left side of marker */
-    left: auto;          /* unset left */
-    transform: translateY(-50%);
-}
-
-

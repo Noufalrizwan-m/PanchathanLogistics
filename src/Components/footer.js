@@ -1,41 +1,47 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Linkedin, Instagram } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { fadeUp } from '../lib/motion';
+
+const quickLinks = [
+  { name: 'About Us', path: '/about' },
+  { name: 'Services', path: '/services' },
+  { name: 'Tracking', path: '/tracking' },
+  { name: 'Contact Us', path: '/contact' },
+];
+
+const coreServices = ['Air Freight', 'Ocean Freight', 'Customs Clearance (Essential Forms)', 'Warehousing'];
+
+const socials = [
+  { icon: Facebook, href: 'https://www.facebook.com/profile.php?id=100066693142443' },
+  { icon: Instagram, href: 'https://www.instagram.com/panchathan_logistics/' },
+  { icon: Linkedin, href: 'https://www.linkedin.com/in/a-mohammed-jaffar-863003299' },
+];
 
 const Footer = () => (
-  <footer className="bg-white text-gray-900 py-12 px-6 md:px-12">
-    <div className="max-w-7xl mx-auto border-b border-gray-300 pb-8 mb-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-
-        {/* Logo & Tagline */}
+  <footer className="relative bg-brand-green text-white overflow-hidden">
+    <div
+      className="absolute -top-24 -right-24 w-96 h-96 rounded-full blur-3xl opacity-20 pointer-events-none"
+      style={{ background: 'radial-gradient(circle, rgba(245,166,35,0.7) 0%, rgba(245,166,35,0) 70%)' }}
+    />
+    <motion.div {...fadeUp} className="relative max-w-7xl mx-auto px-6 md:px-12 py-16">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 pb-10 border-b border-white/15">
         <div className="flex flex-col items-start">
-          <Link to="/" className="flex items-center space-x-2 mb-4">
-            <img
-              src="logo.png"
-              alt="Panchathan Logistics"
-              className="w-3/4 md:w-full h-auto object-contain"
-            />
+          <Link to="/" className="mb-4 bg-white/95 rounded-2xl p-2 inline-block">
+            <img src="/Logo.png" alt="Panchathan Logistics" className="h-12 w-auto object-contain" />
           </Link>
-          <p className="text-sm text-gray-500">
-            One Stop For All Your Courier and Cargo Needs.
+          <p className="text-sm text-white/70 leading-relaxed">
+            One stop for your courier &amp; cargo needs — across India, and beyond.
           </p>
         </div>
 
-        {/* Quick Links */}
         <div>
-          <h4 className="text-lg font-bold text-[#175d29] mb-4">Quick Links</h4>
+          <h4 className="text-sm font-bold uppercase tracking-widest text-brand-amber mb-4">Quick Links</h4>
           <ul className="space-y-2 text-sm">
-            {[
-              { name: 'About Us', path: '/about' },
-              { name: 'Services', path: '/services' },
-              { name: 'Tracking', path: '/tracking' },
-              { name: 'Contact Us', path: '/contact' },
-            ].map((link) => (
+            {quickLinks.map((link) => (
               <li key={link.name}>
-                <Link
-                  to={link.path}
-                  className="text-gray-500 hover:text-[#175d29] transition-colors duration-300"
-                >
+                <Link to={link.path} className="text-white/70 hover:text-white transition-colors duration-300">
                   {link.name}
                 </Link>
               </li>
@@ -43,21 +49,12 @@ const Footer = () => (
           </ul>
         </div>
 
-        {/* Core Services */}
         <div>
-          <h4 className="text-lg font-bold text-[#175d29] mb-4">Core Services</h4>
+          <h4 className="text-sm font-bold uppercase tracking-widest text-brand-amber mb-4">Core Services</h4>
           <ul className="space-y-2 text-sm">
-            {[
-              'Air Freight',
-              'Ocean Freight',
-              'Customs Clearance (Essential Forms)',
-              'Warehousing',
-            ].map((service) => (
+            {coreServices.map((service) => (
               <li key={service}>
-                <Link
-                  to="/services"
-                  className="text-gray-500 hover:text-[#175d29] transition-colors duration-300"
-                >
+                <Link to="/services" className="text-white/70 hover:text-white transition-colors duration-300">
                   {service}
                 </Link>
               </li>
@@ -65,49 +62,30 @@ const Footer = () => (
           </ul>
         </div>
 
-        {/* Contact & Socials */}
         <div>
-          <h4 className="text-lg font-bold text-[#175d29] mb-4">Contact us</h4>
-          <p className="text-sm text-gray-500">Email: info@panchathanlogistics.com</p>
-          <p className="text-sm text-gray-500 mb-4">Phone: +91 73394 33590, +91 95147 53332</p>
-          <div className="flex space-x-4 mt-2">
-            <a
-              href="https://www.facebook.com/profile.php?id=100066693142443"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#175d29] hover:text-[#0f3d19] transition-colors"
-            >
-              <Facebook className="w-5 h-5" />
-            </a>
-
-            <a
-              href="https://www.instagram.com/panchathan_logistics/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#175d29] hover:text-[#0f3d19] transition-colors"
-            >
-              <Instagram className="w-5 h-5" />
-            </a>
-
-            <a
-              href="https://www.linkedin.com/in/a-mohammed-jaffar-863003299"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#175d29] hover:text-[#0f3d19] transition-colors"
-            >
-              <Linkedin className="w-5 h-5" />
-            </a>
+          <h4 className="text-sm font-bold uppercase tracking-widest text-brand-amber mb-4">Head Office</h4>
+          <p className="text-sm text-white/70">info@panchathanlogistics.com</p>
+          <p className="text-sm text-white/70 mb-4">+91 73394 33590</p>
+          <div className="flex gap-3">
+            {socials.map(({ icon: Icon, href }, i) => (
+              <a
+                key={i}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-brand-amber hover:text-brand-green transition-colors duration-300"
+              >
+                <Icon className="w-4 h-4" />
+              </a>
+            ))}
           </div>
         </div>
       </div>
-    </div>
 
-    {/* Footer Bottom */}
-    <div className="text-center">
-      <p className="text-sm text-gray-400">
+      <p className="text-center text-xs text-white/50 pt-8">
         © {new Date().getFullYear()} Panchathan Logistics. All rights reserved.
       </p>
-    </div>
+    </motion.div>
   </footer>
 );
 

@@ -5,6 +5,8 @@ import { useRef, useState, useEffect } from "react";
 // Import Components
 import Header from '../src/Components/header';
 import Footer from '../src/Components/footer';
+import AmbientBackground from '../src/Components/ui/AmbientBackground';
+import CursorFollower from '../src/Components/ui/CursorFollower';
 
 // Import Pages
 import Home from '../src/Pages/home';
@@ -19,8 +21,10 @@ function App() {
   }, []);
   return (
     <Router>
+      <CursorFollower />
+      <AmbientBackground />
       <Header />
-      <main className="min-h-screen pt-20"> 
+      <main className="min-h-screen pt-24 md:pt-28">{/* offset for floating glass header */}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/tracking" element={<Tracking />} />
