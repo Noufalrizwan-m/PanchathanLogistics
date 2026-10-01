@@ -5,8 +5,8 @@ import { buttonTap } from '../../lib/motion';
 
 const VARIANTS = {
   primary: 'bg-gradient-to-r from-brand-amber to-brand-amberDark text-gray-900 shadow-glass border border-white/40',
-  secondary: 'bg-white/50 backdrop-blur-xl text-brand-green border border-brand-green/30 hover:bg-white/70',
-  ghost: 'bg-transparent text-brand-green border border-transparent hover:border-brand-green/30',
+  secondary: 'bg-white/50 backdrop-blur-xl text-brand-green border border-brand-green hover:bg-white/70',
+  ghost: 'bg-transparent text-brand-green border border-transparent hover:border-brand-green',
   dark: 'bg-brand-green text-white border border-white/10 hover:brightness-110',
 };
 

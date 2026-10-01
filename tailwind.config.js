@@ -3,7 +3,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sora: ['Sora', 'sans-serif'],
+        sora: ['General Sans', 'Sora', 'sans-serif'],
         titillium: ['"Titillium Web"', 'sans-serif'],
       },
       colors: {

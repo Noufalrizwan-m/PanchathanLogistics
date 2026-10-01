@@ -22,6 +22,10 @@ const socials = [
 const Footer = () => (
   <footer className="relative bg-brand-green text-white overflow-hidden">
     <div
+      className="absolute inset-0 opacity-[0.08] pointer-events-none"
+      style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed' }}
+    />
+    <div
       className="absolute -top-24 -right-24 w-96 h-96 rounded-full blur-3xl opacity-20 pointer-events-none"
       style={{ background: 'radial-gradient(circle, rgba(245,166,35,0.7) 0%, rgba(245,166,35,0) 70%)' }}
     />

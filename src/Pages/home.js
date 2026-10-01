@@ -1,19 +1,47 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Search, Hash, MapPin, Plane, Truck, Anchor, Package, Factory, Wrench, Shield, UserCheck, Zap, Compass, Radar, Network, Headphones, FileCheck2, PackageSearch, CheckCircle2, XCircle, AlertCircle, Phone, MessageCircle, X, Hand, ArrowRight, Warehouse } from "lucide-react";
+import { Search, Hash, MapPin, Plane, Truck, Anchor, Package, Factory, Wrench, Shield, UserCheck, Zap, Compass, Radar, Network, Headphones, FileCheck2, PackageSearch, CheckCircle2, XCircle, AlertCircle, Phone, MessageCircle, X, Hand, ArrowRight, Warehouse, Landmark, Globe } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { TextPlugin } from "gsap/TextPlugin";
 import BranchesSection from '../Components/branchsection';
-import DeliveryProcess from '../Components/DeliveryProcess';
-import RouteMapStats from '../Components/RouteMapStats';
-import ShaderBackground from '../Components/ShaderBackground';
 import GlassCard from '../Components/ui/GlassCard';
 import GlassButton from '../Components/ui/GlassButton';
 import SectionHeading from '../Components/ui/SectionHeading';
 import MarqueeStrip from '../Components/ui/MarqueeStrip';
+import SEO from '../Components/SEO';
 import { staggerContainer, staggerItem, fadeUp, fadeIn } from '../lib/motion';
+
+const homeJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'LogisticsBusiness',
+  name: 'Panchathan Logistics',
+  image: 'https://panchathanlogistics.com/Logo.png',
+  url: 'https://panchathanlogistics.com/',
+  telephone: '+91-73394-33590',
+  priceRange: '₹₹',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: 'Plot No. 65, Annai Therasa Street, V.O.C. Nagar, Pammal',
+    addressLocality: 'Chennai',
+    addressRegion: 'Tamil Nadu',
+    postalCode: '600075',
+    addressCountry: 'IN',
+  },
+  geo: { '@type': 'GeoCoordinates', latitude: 12.9716, longitude: 80.1256 },
+  areaServed: [
+    { '@type': 'State', name: 'Tamil Nadu' },
+    { '@type': 'Country', name: 'India' },
+  ],
+  hasMap: 'https://www.google.com/maps/place/Chennai,+Tamil+Nadu',
+  sameAs: [],
+  makesOffer: [
+    { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Courier Services Chennai' } },
+    { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Cargo Services Tamil Nadu' } },
+    { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Air, Sea & Road Freight Forwarding India' } },
+  ],
+};
 
 const whyChooseUs = [
   { icon: Radar, title: 'Real-Time Tracking', desc: 'Live AWB status from pickup to delivery, no guesswork.' },
@@ -61,7 +89,7 @@ const CountUpStat = ({ value, label }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, amount: 0.6 }}
+    viewport={{ once: false, amount: 0.6 }}
     transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
   >
     <p className="font-sora text-2xl md:text-3xl font-extrabold text-brand-green">{value}</p>
@@ -85,7 +113,6 @@ function Home() {
   const coreCapSectionRef = useRef(null);
   const coreCapLeftRef = useRef(null);
   const whyChooseSectionRef = useRef(null);
-  const whyChooseLeftRef = useRef(null);
 
   const [awb, setAwb] = useState("");
   const [pincode, setPincode] = useState("");
@@ -105,9 +132,19 @@ function Home() {
       desc: "End-to-end visibility and lifecycle tracking for client assets — location, condition, and custody, node to node.",
     },
     {
-      title: "High-Value & Technology Logistics",
+      title: "IT & Technology Sector Assets",
       icon: Package,
-      desc: "Secure, anti-static, climate-controlled transport for sensitive electronics and prototypes.",
+      desc: "Secure, anti-static, climate-controlled handling for servers, laptops, and data center equipment — trusted by IT companies across India.",
+    },
+    {
+      title: "Banking & Financial Institutions",
+      icon: Landmark,
+      desc: "Chain-of-custody asset logistics for banks and NBFCs — secure transport, tracking, and audit-ready handling of high-value equipment.",
+    },
+    {
+      title: "International Export & Global Trade",
+      icon: Globe,
+      desc: "Full-cycle export logistics — documentation, customs clearance, and freight forwarding connecting Indian businesses to global markets.",
     },
     {
       title: "Automotive Supply Chain",
@@ -131,14 +168,20 @@ function Home() {
     const ctx = gsap.context(() => {
       if (heroHeadingRef.current) {
         splitText(heroHeadingRef.current);
-        gsap.from(heroHeadingRef.current.querySelectorAll(".char-split"), {
+        const heroChars = heroHeadingRef.current.querySelectorAll(".char-split");
+        gsap.from(heroChars, {
           y: "100%",
           opacity: 0,
-          stagger: 0.03,
-          duration: 1.2,
+          stagger: 0.02,
+          duration: 0.9,
           ease: "power3.out",
-          delay: 0.3,
+          delay: 0.2,
         });
+        // Safety net: guarantees the heading is visible even if the reveal
+        // tween above gets interrupted (e.g. by a dev-mode double-effect
+        // race) — clears any leftover inline opacity/transform after the
+        // animation should be long done.
+        gsap.delayedCall(2.5, () => gsap.set(heroChars, { clearProps: "opacity,transform" }));
       }
 
       if (serviceTitleRef.current) {
@@ -172,27 +215,6 @@ function Home() {
         );
       });
 
-      // Pin the left heading while the right-side content scrolls past,
-      // then release the section to resume normal page scroll. Desktop
-      // only — on small screens both columns just stack and scroll normally.
-      const mm = gsap.matchMedia();
-      mm.add("(min-width: 1024px)", () => {
-        [
-          [coreCapSectionRef, coreCapLeftRef],
-          [whyChooseSectionRef, whyChooseLeftRef],
-        ].forEach(([sectionRef, leftRef]) => {
-          if (!sectionRef.current || !leftRef.current) return;
-          ScrollTrigger.create({
-            trigger: sectionRef.current,
-            start: "top top+=96",
-            end: "bottom bottom",
-            pin: leftRef.current,
-            pinSpacing: false,
-          });
-        });
-
-        return () => ScrollTrigger.getAll().forEach((t) => t.kill());
-      });
     });
 
     // Disable the site-wide scroll-snap on Home — it fights the pin
@@ -222,61 +244,66 @@ function Home() {
     document.body.appendChild(script);
   }, []);
 
-  // One wheel/swipe from the hero jumps straight to the next section
-  // (and one wheel/swipe back up from just past it returns to the top
-  // of the hero), instead of a slow partial scroll. Only active near
-  // that boundary — normal scrolling resumes everywhere else.
+  // One wheel/swipe from the top of a "snap section" jumps straight to
+  // the next section (and one wheel/swipe back up from just past its
+  // bottom edge returns to its top), instead of a slow partial scroll.
+  // Only active near each section's own boundary — normal scrolling
+  // resumes everywhere else. Hero -> Trust Pillars, and Why Choose Us
+  // -> Quick Service Access both use this.
   useEffect(() => {
     let locked = false;
-    const BACK_ZONE = 80; // how far past the hero "scroll up" still snaps back
+    const BACK_ZONE = 80; // how far past a section's bottom "scroll up" still snaps back
+    const snapRefs = [heroSectionRef];
 
-    const goToNextSection = () => {
-      const heroEl = heroSectionRef.current;
-      if (!heroEl) return;
+    const goToNextSection = (el) => {
       locked = true;
-      const nextTop = heroEl.offsetTop + heroEl.offsetHeight;
+      const nextTop = el.offsetTop + el.offsetHeight;
       window.scrollTo({ top: nextTop, behavior: 'smooth' });
       setTimeout(() => { locked = false; }, 900);
     };
 
-    const goBackToHero = () => {
-      const heroEl = heroSectionRef.current;
-      if (!heroEl) return;
+    const goBackToSection = (el) => {
       locked = true;
-      window.scrollTo({ top: heroEl.offsetTop, behavior: 'smooth' });
+      window.scrollTo({ top: el.offsetTop, behavior: 'smooth' });
       setTimeout(() => { locked = false; }, 900);
     };
 
     const handleWheel = (e) => {
-      const heroEl = heroSectionRef.current;
-      if (!heroEl || locked) return;
-      if (e.deltaY > 0 && window.scrollY < heroEl.offsetHeight - 4) {
-        e.preventDefault();
-        goToNextSection();
-      } else if (
-        e.deltaY < 0 &&
-        window.scrollY >= heroEl.offsetHeight - 4 &&
-        window.scrollY < heroEl.offsetHeight + BACK_ZONE
-      ) {
-        e.preventDefault();
-        goBackToHero();
+      if (locked) return;
+      for (const ref of snapRefs) {
+        const el = ref.current;
+        if (!el) continue;
+        const bottom = el.offsetTop + el.offsetHeight;
+        if (e.deltaY > 0 && window.scrollY >= el.offsetTop - 4 && window.scrollY < bottom - 4) {
+          e.preventDefault();
+          goToNextSection(el);
+          return;
+        }
+        if (e.deltaY < 0 && window.scrollY >= bottom - 4 && window.scrollY < bottom + BACK_ZONE) {
+          e.preventDefault();
+          goBackToSection(el);
+          return;
+        }
       }
     };
 
     let touchStartY = 0;
     const handleTouchStart = (e) => { touchStartY = e.touches[0].clientY; };
     const handleTouchMove = (e) => {
-      const heroEl = heroSectionRef.current;
-      if (!heroEl || locked) return;
+      if (locked) return;
       const deltaY = touchStartY - e.touches[0].clientY;
-      if (deltaY > 30 && window.scrollY < heroEl.offsetHeight - 4) {
-        goToNextSection();
-      } else if (
-        deltaY < -30 &&
-        window.scrollY >= heroEl.offsetHeight - 4 &&
-        window.scrollY < heroEl.offsetHeight + BACK_ZONE
-      ) {
-        goBackToHero();
+      for (const ref of snapRefs) {
+        const el = ref.current;
+        if (!el) continue;
+        const bottom = el.offsetTop + el.offsetHeight;
+        if (deltaY > 30 && window.scrollY >= el.offsetTop - 4 && window.scrollY < bottom - 4) {
+          goToNextSection(el);
+          return;
+        }
+        if (deltaY < -30 && window.scrollY >= bottom - 4 && window.scrollY < bottom + BACK_ZONE) {
+          goBackToSection(el);
+          return;
+        }
       }
     };
 
@@ -316,9 +343,7 @@ function Home() {
       if (searchTokenRef.current !== token) return;
 
       if (responseData.status === "failed") {
-        const errorMessage =
-          responseData.data || `Tracking failed for AWB: ${trackingAwb}`;
-        setAwbResult({ error: errorMessage });
+        setAwbResult({ error: `Tracking data not found for AWB: ${trackingAwb}. Please double-check the number.` });
         return;
       }
 
@@ -405,23 +430,26 @@ function Home() {
 
   return (
     <>
+      <SEO
+        title="Courier & Cargo Services in Chennai, Tamil Nadu | Panchathan Logistics"
+        description="Panchathan Logistics is a trusted courier, cargo & freight forwarding company headquartered in Chennai, Tamil Nadu, serving all of India with air, sea, road freight, customs clearance (CHA) and real-time AWB tracking."
+        keywords="courier services Chennai, cargo services Chennai, logistics company Tamil Nadu, freight forwarding India, packers and movers Chennai, air cargo Chennai, customs clearance Chennai, best logistics company in India"
+        path="/"
+        jsonLd={homeJsonLd}
+      />
       {/* HERO -> TAILORED EXPERTISE */}
       <div className="relative">
       {/* HERO */}
       <section ref={heroSectionRef} className="relative z-10 -mt-24 md:-mt-28 pt-32 md:pt-40 pb-32 md:pb-36 px-4 md:px-8 overflow-hidden min-h-screen flex items-center">
-        <div className="absolute inset-0 -z-10">
-          <ShaderBackground />
-        </div>
-
         {heroFloatingBadges.map((badge, i) => (
           <motion.div
             key={badge.label}
-            className={`hidden md:flex absolute z-10 items-center gap-2 px-3 py-1.5 rounded-full text-brand-green/80 text-xs font-semibold border border-brand-green/15 ${badge.position}`}
+            className={`hidden md:flex absolute z-10 items-center gap-2 px-3 py-1.5 rounded-full text-brand-green text-xs font-semibold border border-brand-green ${badge.position}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 + i * 0.15, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            <badge.icon className="w-3.5 h-3.5 text-brand-green/60" />
+            <badge.icon className="w-3.5 h-3.5 text-brand-green" />
             {badge.label}
           </motion.div>
         ))}
@@ -468,8 +496,8 @@ function Home() {
               />
             </div>
 
-            <div className="hidden md:block w-px my-2 bg-brand-green/15" />
-            <div className="block md:hidden h-px mx-2 bg-brand-green/15" />
+            <div className="hidden md:block w-px my-2 bg-brand-green" />
+            <div className="block md:hidden h-px mx-2 bg-brand-green" />
 
             <div className="relative flex items-center gap-2 px-4 py-3 w-full md:flex-1 min-w-0">
               <MapPin className="text-brand-green w-5 h-5 flex-shrink-0" />
@@ -542,12 +570,12 @@ function Home() {
           <motion.div
             animate={{ y: [0, 10, 0] }}
             transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-            className="md:hidden text-brand-green/50"
+            className="md:hidden text-brand-green"
           >
             <Hand className="w-6 h-6" />
           </motion.div>
 
-          <div className="hidden md:flex w-6 h-10 rounded-full border-2 border-brand-green/40 justify-center pt-2">
+          <div className="hidden md:flex w-6 h-10 rounded-full border-2 border-brand-green justify-center pt-2">
             <motion.span
               animate={{ y: [0, 14, 0], opacity: [1, 0, 1] }}
               transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
@@ -558,9 +586,13 @@ function Home() {
       </section>
 
       {/* TRUST PILLARS */}
-      <section className="relative z-10 pt-52 md:pt-60 pb-16 md:pb-24 px-4 md:px-6 scroll-mt-24 md:scroll-mt-28">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center w-full">
-          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.4 }} className="order-1 flex flex-col items-center text-center lg:items-start lg:text-left">
+      <section className="relative z-10 pt-52 md:pt-60  pb-16 md:pb-24 px-4 md:px-6 bg-white scroll-mt-24 md:scroll-mt-28 overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-[0.1] pointer-events-none"
+          style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed', filter: 'invert(1)' }}
+        />
+        <div className="relative max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12  lg:gap-16 items-center w-full">
+          <motion.div initial="hidden" whileInView="show" viewport={{ once: false, amount: 0.4 }} className="order-1 flex flex-col  items-center text-center lg:items-start lg:text-left">
             <h2 className="font-sora text-3xl md:text-4xl xl:text-5xl font-extrabold leading-tight">
               {[
                 { t: 'Trusted', c: 'text-gray-900' },
@@ -615,7 +647,7 @@ function Home() {
               <motion.div
                 key={i}
                 variants={staggerItem}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-brand-green/80 text-xs font-semibold border border-brand-green/15 bg-white/60"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-brand-green text-xs font-semibold border border-brand-green bg-white/60"
               >
                 <pillar.icon className="w-3.5 h-3.5" />
                 {pillar.title}
@@ -627,7 +659,7 @@ function Home() {
             <motion.div
               initial={{ scaleY: 0 }}
               whileInView={{ scaleY: 1 }}
-              viewport={{ once: true, amount: 0.3 }}
+              viewport={{ once: false, amount: 0.3 }}
               transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
               style={{ transformOrigin: 'top' }}
               className="absolute left-[7px] top-3 bottom-3 w-px bg-gray-200"
@@ -663,7 +695,7 @@ function Home() {
       {/* TAILORED EXPERTISE */}
       <section ref={coreCapSectionRef} className="relative z-10 py-16 md:py-20 lg:py-10 px-4 md:px-6">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-          <div ref={coreCapLeftRef} className="lg:pt-10">
+          <div ref={coreCapLeftRef} className="lg:sticky lg:top-28 lg:self-start">
             <SectionHeading
               align="left"
               eyebrow="Core Capabilities"
@@ -690,77 +722,41 @@ function Home() {
       {/* end scroll-truck wrapper */}
 
       {/* WHY CHOOSE US */}
-      <section ref={whyChooseSectionRef} className="relative py-16 md:py-24 lg:py-10 px-4 md:px-6 overflow-hidden">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-          <motion.div ref={whyChooseLeftRef} {...fadeUp} className="relative lg:pt-10">
-            <motion.div
-              className="hidden md:block absolute -left-12 -top-12 w-64 h-64 lg:w-72 lg:h-72 -z-10"
-              initial={{ clipPath: 'circle(0% at 50% 50%)' }}
-              whileInView={{ clipPath: 'circle(75% at 50% 50%)' }}
-              viewport={{ once: true, amount: 0.4 }}
-              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <img src="/container.png" alt="" className="w-full h-full object-cover rounded-full opacity-80" />
-            </motion.div>
-
-            <span className="text-xs md:text-sm font-bold uppercase tracking-[0.2em] text-brand-amberDark mb-3 inline-block">
-              Why Panchathan
-            </span>
-            <h2 className="font-sora font-extrabold text-3xl md:text-4xl xl:text-5xl leading-tight text-brand-green mb-5">
-              Why Choose Us for Your Shipment
-            </h2>
-            <p className="text-gray-600 text-base md:text-lg leading-relaxed mb-8 max-w-md">
-              A decade of moving India's cargo — real infrastructure, real accountability, and real people on the line, every time.
-            </p>
-            <GlassButton to="/services">Explore Our Services</GlassButton>
-          </motion.div>
-
-          <motion.div
-            {...staggerContainer(0.12)}
-            className="grid grid-cols-2 divide-x divide-y divide-white/60 border border-white/60 rounded-3xl overflow-hidden bg-white/40 backdrop-blur-xl shadow-glass lg:flex lg:flex-col lg:divide-x-0 lg:gap-6 lg:py-10 lg:border-0 lg:bg-transparent lg:backdrop-blur-none lg:shadow-none"
-          >
+      <section ref={whyChooseSectionRef} className="relative py-16 bg-white md:py-24 px-4 md:px-6 overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-[0.1] pointer-events-none"
+          style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed', filter: 'invert(1)' }}
+        />
+        <div className="relative max-w-5xl mx-auto">
+          <SectionHeading
+            eyebrow="Why Panchathan"
+            title="Why Choose Us for Your Shipment"
+            subtitle="A decade of moving India's cargo — real infrastructure, real accountability, and real people on the line, every time."
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-10">
             {whyChooseUs.map((item, i) => (
-              <motion.div key={i} variants={staggerItem} className="p-6 md:p-8 lg:p-6 lg:bg-white/40 lg:backdrop-blur-xl lg:border lg:border-white/60 lg:rounded-2xl lg:shadow-glass">
-                <div className="w-10 h-10 rounded-xl bg-brand-green/10 text-brand-green flex items-center justify-center mb-4">
-                  <item.icon className="w-5 h-5" />
-                </div>
-                <h3 className="font-bold text-gray-900 mb-1 text-sm md:text-base">{item.title}</h3>
-                <p className="text-xs md:text-sm text-gray-600 leading-relaxed">{item.desc}</p>
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.4 }}
+                transition={{ duration: 0.5, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <GlassCard as="div" className="h-full p-6 text-center flex flex-col items-center">
+                  <div className="w-11 h-11 rounded-xl bg-brand-green text-white flex items-center justify-center mb-4">
+                    <item.icon className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-bold text-gray-900 mb-1.5 text-base">{item.title}</h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">{item.desc}</p>
+                </GlassCard>
               </motion.div>
             ))}
-          </motion.div>
-        </div>
-      </section>
-
-      <RouteMapStats />
-
-      {/* ABOUT SNIPPET */}
-      <section className="py-16 md:py-20 px-4 md:px-6">
-        <div className="max-w-6xl mx-auto">
-          <GlassCard className="flex flex-col md:flex-row items-center gap-8 md:gap-12 p-6 md:p-10">
-            <div className="w-full md:w-2/5 flex items-center justify-center">
-              <img src="/truck1.png" alt="Panchathan Logistics Cargo Truck" className="h-auto max-h-64 object-contain" />
-            </div>
-            <div className="w-full md:w-3/5 flex flex-col gap-4 scroll-reveal">
-              <h2 className="text-2xl md:text-4xl font-sora font-bold text-gray-900">
-                More Than Moving Goods. We Move Commitments.
-              </h2>
-              <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-                Over a decade building India's most trusted supply chain network — real infrastructure,
-                real people, and outcomes you can measure.
-              </p>
-              <div>
-                <GlassButton variant="dark" onClick={() => navigate('/about')}>
-                  Read Our Full Story
-                </GlassButton>
-              </div>
-            </div>
-          </GlassCard>
+          </div>
         </div>
       </section>
 
       {/* QUICK SERVICE ACCESS */}
-      <section className="py-16 md:py-20 px-4 md:px-6">
+      <section className="py-16 md:py-20  px-4 md:px-6">
         <div className="max-w-6xl mx-auto">
           <SectionHeading eyebrow="Explore" title="Quick Service Access" />
 
@@ -796,8 +792,6 @@ function Home() {
           </div>
         </div>
       </section>
-
-      <DeliveryProcess />
 
       <BranchesSection />
 
@@ -841,7 +835,7 @@ function Home() {
 
               {pincodeResult && pincodeResult.length > 0 && (
                 <div className="relative flex flex-col items-center text-center">
-                  <div className="w-14 h-14 rounded-2xl bg-brand-green/10 text-brand-green flex items-center justify-center mb-4 mx-auto">
+                  <div className="w-14 h-14 rounded-2xl bg-brand-green text-white flex items-center justify-center mb-4 mx-auto">
                     <CheckCircle2 className="w-8 h-8" />
                   </div>
                   <h4 className="text-lg font-bold text-brand-green mb-1">Service Available!</h4>
@@ -858,7 +852,7 @@ function Home() {
                     </a>
                     <button
                       onClick={closeResultModal}
-                      className="flex-1 py-2.5 rounded-full bg-white border border-brand-green/30 text-brand-green text-sm font-semibold hover:bg-brand-green/5 transition"
+                      className="flex-1 py-2.5 rounded-full bg-white border border-brand-green text-brand-green text-sm font-semibold hover:bg-gray-50 transition"
                     >
                       Got it
                     </button>
@@ -876,14 +870,14 @@ function Home() {
                     We don't currently deliver to pincode <strong>{pincode}</strong>.
                   </p>
 
-                  <div className="mt-5 w-full rounded-2xl bg-brand-green/5 border border-brand-green/10 p-4 flex flex-col items-center text-center">
-                    <p className="text-xs font-semibold text-brand-green uppercase tracking-wide mb-2">Need help anyway?</p>
-                    <p className="text-sm text-gray-600 mb-3">Our customer care team can check for alternate delivery options or nearby coverage.</p>
+                  <div className="mt-5 w-full rounded-2xl bg-brand-green p-4 flex flex-col items-center text-center">
+                    <p className="text-xs font-semibold text-white uppercase tracking-wide mb-2">Need help anyway?</p>
+                    <p className="text-sm text-white/80 mb-3">Our customer care team can check for alternate delivery options or nearby coverage.</p>
                     <div className="flex gap-2 w-full justify-center">
                       <a href="tel:+917339433590" className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full bg-brand-green text-white text-sm font-semibold hover:brightness-110 transition">
                         <Phone className="w-4 h-4" /> Call
                       </a>
-                      <a href="https://wa.me/917339433590" target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full bg-white border border-brand-green/30 text-brand-green text-sm font-semibold hover:bg-brand-green/5 transition">
+                      <a href="https://wa.me/917339433590" target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full bg-white border border-brand-green text-brand-green text-sm font-semibold hover:bg-gray-50 transition">
                         <MessageCircle className="w-4 h-4" /> WhatsApp
                       </a>
                     </div>
@@ -899,14 +893,14 @@ function Home() {
                   <h4 className="text-lg font-bold text-gray-900 mb-1">Tracking Error</h4>
                   <p className="text-sm text-gray-600">{awbResult.error}</p>
 
-                  <div className="mt-5 w-full rounded-2xl bg-brand-green/5 border border-brand-green/10 p-4 flex flex-col items-center text-center">
-                    <p className="text-xs font-semibold text-brand-green uppercase tracking-wide mb-2">Still can't find your shipment?</p>
-                    <p className="text-sm text-gray-600 mb-3">Reach out to our customer care team with your AWB number for help.</p>
+                  <div className="mt-5 w-full rounded-2xl bg-brand-green p-4 flex flex-col items-center text-center">
+                    <p className="text-xs font-semibold text-white uppercase tracking-wide mb-2">Still can't find your shipment?</p>
+                    <p className="text-sm text-white/80 mb-3">Reach out to our customer care team with your AWB number for help.</p>
                     <div className="flex gap-2 w-full justify-center">
                       <a href="tel:+917339433590" className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full bg-brand-green text-white text-sm font-semibold hover:brightness-110 transition">
                         <Phone className="w-4 h-4" /> Call
                       </a>
-                      <a href="https://wa.me/917339433590" target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full bg-white border border-brand-green/30 text-brand-green text-sm font-semibold hover:bg-brand-green/5 transition">
+                      <a href="https://wa.me/917339433590" target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full bg-white border border-brand-green text-brand-green text-sm font-semibold hover:bg-gray-50 transition">
                         <MessageCircle className="w-4 h-4" /> WhatsApp
                       </a>
                     </div>

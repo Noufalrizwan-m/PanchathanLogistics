@@ -31,9 +31,9 @@ void main() {
     wave += 0.5 / (dist + 0.5) * sin(dist * 10.0 - u_time * 2.0);
 
     // Light liquid colors
-    vec3 baseColor = vec3(0.96, 0.97, 0.96); // Soft white / grey
-    vec3 accentColor = vec3(0.090, 0.365, 0.161); // Brand Green #175d29
-    vec3 metalColor = vec3(0.04, 0.16, 0.08); // Deep green highlight
+    vec3 baseColor = vec3(0.98, 0.98, 0.98); // White
+    vec3 accentColor = vec3(0.80, 0.81, 0.83); // Grey
+    vec3 metalColor = vec3(0.55, 0.56, 0.58); // Deeper grey highlight
 
     float mixFactor = clamp(0.20 + 0.20 * wave, 0.0, 0.85);
     vec3 color = mix(baseColor, accentColor, mixFactor);

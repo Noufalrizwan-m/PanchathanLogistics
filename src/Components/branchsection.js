@@ -129,14 +129,18 @@ const BranchesSection = () => {
   }, []);
 
   return (
-    <section className="relative py-20 xl:py-28 px-6 md:px-12">
-      <div className="max-w-7xl mx-auto">
+    <section className="relative py-20 bg-white xl:py-28 px-6 md:px-12 overflow-hidden">
+      <div
+        className="absolute inset-0 opacity-[0.1] pointer-events-none"
+        style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed', filter: 'invert(1)' }}
+      />
+      <div className="relative max-w-7xl mx-auto">
         <motion.h2 {...fadeUp} className="branch-animate font-sora text-3xl md:text-5xl text-center font-extrabold text-brand-green mb-14">
           Our National Footprint
         </motion.h2>
 
         <div className="flex flex-col lg:flex-row gap-10 lg:gap-8 items-stretch">
-          <div className="w-full lg:w-3/5 branch-animate bg-white/55 backdrop-blur-xl border border-white/50 shadow-glass rounded-3xl p-4 md:p-8">
+          <div className="w-full lg:w-3/5 branch-animate  p-4 md:p-8">
             <div className="relative w-full aspect-square max-w-lg mx-auto">
               <img src="/india.webp" alt="India Map" className="w-full h-full object-contain" />
               {branchData.map((branch, index) => (
@@ -156,7 +160,7 @@ const BranchesSection = () => {
             <ul className="space-y-3 mb-10">
               {checklist.map((item, i) => (
                 <motion.li key={i} variants={staggerItem} className="flex items-start gap-3 text-gray-800">
-                  <span className="w-5 h-5 mt-0.5 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center text-xs font-bold flex-shrink-0">✓</span>
+                  <span className="w-5 h-5 mt-0.5 rounded-full bg-brand-green text-white flex items-center justify-center text-xs font-bold flex-shrink-0">✓</span>
                   <span className="text-sm md:text-base">{item}</span>
                 </motion.li>
               ))}

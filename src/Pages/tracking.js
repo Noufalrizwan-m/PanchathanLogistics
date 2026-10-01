@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import PageHero from '../Components/pagehero';
 import GlassCard from '../Components/ui/GlassCard';
 import { useSearchParams } from 'react-router-dom';
-import { Hash, Search, Clock, MapPin, Plane, Truck, CheckCircle, Package, Copy } from 'lucide-react';
+import { Hash, Search, Clock, MapPin, Plane, Truck, CheckCircle, Package, Copy, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
+import SEO from '../Components/SEO';
 
 const COLORS = {
   primary: "#175d29",
@@ -219,6 +219,7 @@ const Tracking = () => {
     setLoading(true);
     setError(null);
     setTrackingData(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     try {
       const payload = [trimmedAwb];
@@ -238,7 +239,7 @@ const Tracking = () => {
       const responseData = await response.json();
 
       if (responseData.status === "failed" || !responseData.data || responseData.data.length === 0) {
-        setError(typeof responseData.data === 'string' ? responseData.data : "AWB tracking data not found. Please double-check the number.");
+        setError("AWB tracking data not found. Please double-check the number.");
         return;
       }
 
@@ -337,6 +338,11 @@ const Tracking = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialAwb]);
 
+  useEffect(() => {
+    document.documentElement.classList.add('no-snap');
+    return () => document.documentElement.classList.remove('no-snap');
+  }, []);
+
   const getFilteredTimeline = (timeline, service) => {
     if (!timeline || timeline.length === 0) return [];
 
@@ -355,11 +361,34 @@ const Tracking = () => {
 
   return (
     <div>
-      <PageHero
-        title="Real-Time Shipment Tracking"
-        subtitle="Your cargo's journey, visible every step of the way."
-        breadcrumb="Home / Tracking"
+      <SEO
+        title="Track Your Shipment — AWB & Pincode Tracking"
+        description="Track your Panchathan Logistics courier or cargo shipment in real time using your AWB number or check pincode serviceability across Chennai, Tamil Nadu and all of India."
+        keywords="track courier Chennai, AWB tracking India, cargo tracking Tamil Nadu, pincode serviceability check, Panchathan Logistics tracking"
+        path="/tracking"
       />
+      <section className="relative bg-brand-green text-white pt-32 md:pt-40 pb-16 md:pb-20 overflow-hidden flex items-center justify-center min-h-[42vh]">
+        <div
+          className="absolute inset-0 opacity-[0.08] pointer-events-none"
+          style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed' }}
+        />
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="relative z-10 max-w-4xl mx-auto px-6 md:px-12 text-center"
+        >
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-4 inline-block">
+            Home / Tracking
+          </span>
+          <h1 className="font-sora text-4xl md:text-6xl font-extrabold mb-6 tracking-tight">
+            Real-Time Shipment Tracking
+          </h1>
+          <p className="text-white/75 text-base md:text-lg max-w-2xl mx-auto">
+            Your cargo's journey, visible every step of the way.
+          </p>
+        </motion.div>
+      </section>
 
       <section className="snap-section py-12 md:py-20 px-4 md:px-12 max-w-7xl mx-auto">
         <motion.form
@@ -386,14 +415,23 @@ const Tracking = () => {
             className="p-3 md:p-4 rounded-full bg-brand-amber text-gray-900 hover:bg-brand-amberDark transition-colors duration-300 shadow-lg disabled:bg-gray-300 flex items-center justify-center flex-shrink-0"
           >
             {loading ? (
-              <div className="animate-spin rounded-full h-5 w-5 md:h-6 md:w-6 border-b-2 border-gray-900" />
+              <RefreshCw className="w-5 h-5 md:w-6 md:h-6 animate-spin" />
             ) : (
               <Search className="w-5 h-5 md:w-6 md:h-6" />
             )}
           </motion.button>
         </motion.form>
 
-        {loading && <p className="mt-12 text-center text-xl font-bold" style={{ color: COLORS.primary }}>Fetching the latest updates...</p>}
+        {loading && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-12 flex flex-col items-center justify-center gap-3"
+          >
+            <RefreshCw className="w-8 h-8 md:w-10 md:h-10 animate-spin" style={{ color: COLORS.primary }} />
+            <p className="text-center text-xl font-bold" style={{ color: COLORS.primary }}>Fetching the latest updates...</p>
+          </motion.div>
+        )}
         {error && <p className="mt-12 text-center text-red-600 font-medium p-4 bg-red-50/80 backdrop-blur-md rounded-2xl max-w-xl mx-auto border-l-4 border-red-500">{error}</p>}
 
         <div className="overflow-hidden relative w-full rounded-full my-8 bg-red-50/60 backdrop-blur-md border border-red-100">
@@ -501,7 +539,7 @@ const Tracking = () => {
                       </div>
                       <div
                         className={`p-4 rounded-2xl transition-all duration-300 border ${isCurrent
-                          ? 'bg-white/80 shadow-md border-brand-green/40 border-l-4'
+                          ? 'bg-white/80 shadow-md border-brand-green border-l-4'
                           : 'bg-white/40 hover:bg-white/60 border-white/40'
                           }`}
                       >

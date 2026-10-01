@@ -1,21 +1,21 @@
 export const fadeUp = {
   initial: { opacity: 0, y: 28 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, amount: 0.3 },
+  viewport: { once: false, amount: 0.3 },
   transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
 };
 
 export const fadeIn = {
   initial: { opacity: 0 },
   whileInView: { opacity: 1 },
-  viewport: { once: true, amount: 0.3 },
+  viewport: { once: false, amount: 0.3 },
   transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
 };
 
 export const staggerContainer = (stagger = 0.12, delayChildren = 0) => ({
   initial: 'hidden',
   whileInView: 'show',
-  viewport: { once: true, amount: 0.2 },
+  viewport: { once: false, amount: 0.2 },
   variants: {
     hidden: {},
     show: {

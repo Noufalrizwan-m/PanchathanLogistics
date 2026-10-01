@@ -96,7 +96,7 @@ const Header = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="lg:hidden fixed inset-0 z-40 bg-brand-green/90 backdrop-blur-2xl flex flex-col items-center justify-center gap-2"
+            className="lg:hidden fixed inset-0 z-40 bg-brand-green flex flex-col items-center justify-center gap-2"
           >
             {navLinks.map((link, i) => (
               <motion.div

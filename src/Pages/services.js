@@ -1,13 +1,14 @@
-import React, { useState, useLayoutEffect } from 'react';
-import ServicesShowcase from '../Components/ServicesShowcase';
-import GlassCard from '../Components/ui/GlassCard';
-import SectionHeading from '../Components/ui/SectionHeading';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import DeliveryProcess from '../Components/DeliveryProcess';
 import { motion } from 'framer-motion';
-import { Plane, Ship, Truck, Factory, Shield, BarChart2, Plus, Minus, FileDown, PackageSearch } from 'lucide-react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { gsap } from 'gsap';
-
-gsap.registerPlugin(ScrollTrigger);
+import {
+  Plane, Ship, Truck, Factory, Shield, BarChart2, PackageSearch,
+  Search, X, FileText, FileSpreadsheet, Download, ArrowRight, ArrowDown, FolderSearch,
+  ClipboardList, FileCheck2, PackageCheck, CheckCircle2, User, ShieldCheck,
+} from 'lucide-react';
+import { staggerContainer, staggerItem } from '../lib/motion';
+import SEO from '../Components/SEO';
 
 // Filenames verified against public/doc/
 const customForms = [
@@ -35,222 +36,386 @@ const customForms = [
   { name: "TSCA CERTIFICATE", file: "TSCA-Certificate.xls" },
 ];
 
-const ToggleButton = ({ isExpanded, onClick }) => (
-  <button
-    onClick={onClick}
-    className="flex items-center justify-center mt-6 py-2 px-4 rounded-full text-white font-semibold bg-brand-amber hover:bg-brand-amberDark transition-colors duration-300 shadow-md"
-  >
-    {isExpanded ? (
-      <>
-        <Minus className="w-5 h-5 mr-2" />
-        Show Less
-      </>
-    ) : (
-      <>
-        <Plus className="w-5 h-5 mr-2" />
-        Show More
-      </>
-    )}
-  </button>
-);
+const getFormMeta = (file) => {
+  const ext = file.split('.').pop().toLowerCase();
+  if (ext === 'docx' || ext === 'doc') {
+    return { Icon: FileText, tint: 'bg-sky-500/10 text-sky-700 group-hover:bg-sky-600 group-hover:text-white' };
+  }
+  return { Icon: FileSpreadsheet, tint: 'bg-brand-green text-white' };
+};
 
-const serviceCategories = [
+const processSteps = [
+  { icon: ClipboardList, title: "Request a Quote", desc: "Tell us what you're shipping — we scope the right mode, route, and cost." },
+  { icon: FileCheck2, title: "Documentation", desc: "We prepare and verify customs paperwork before anything moves." },
+  { icon: PackageCheck, title: "Pickup & Handling", desc: "Cargo is collected, scanned, and staged at the nearest branch." },
+  { icon: Truck, title: "In Transit", desc: "Live tracking across air, sea, rail, or road — every leg logged." },
+  { icon: CheckCircle2, title: "Delivered & Signed", desc: "Proof of delivery at the doorstep, accountability to the last mile." },
+];
+
+// Bento grid: "large" spans 8/12 cols, "tall" spans 4/12 (paired with large),
+// "standard" spans 4/12 (three across), "featured" spans the full 12 cols.
+const bentoServices = [
   {
-    icon: PackageSearch,
-    name: "Asset Management & Tracking",
-    subtitle: "End-to-end visibility, node to node.",
-    details: [
-      "Real-time location & status tracking",
-      "Condition & custody monitoring",
-      "Lifecycle reporting & audit trails",
-      "Pan-India asset network coverage",
-    ],
-    description: "Our core capability — complete visibility and lifecycle tracking for client assets as they move through our network, from origin to final custody.",
-  },
-  {
+    size: 'large',
     icon: Plane,
     name: "Air Freight Forwarding",
-    subtitle: "Global speed, zero compromise.",
-    details: [
-      "Express air cargo",
-      "Consolidation services",
-      "Charter services",
-      "IATA-certified handling",
-    ],
-    description: "Reliable air freight from India to the world's major hubs, optimized for speed and secure customs clearance.",
+    desc: "Express, priority, and consolidated air cargo to India's major trade lanes — managed end-to-end for speed and schedule integrity.",
+    bullets: ["IATA-certified handling", "Charter & consolidation services"],
   },
   {
+    size: 'tall',
     icon: Shield,
     name: "Customs & Compliance",
-    subtitle: "Expert clearance, minimized risk.",
-    details: [
-      "Import/export documentation",
-      "Duty calculation & refunds",
-      "GST/EXIM regulatory consulting",
-      "AEO accreditation status",
-    ],
-    description: "Navigate Indian customs regulations effortlessly — full compliance, faster clearance, fewer delays.",
-    longContentJSX: (
-      <>
-        <div className="mt-6 pt-5 border-t border-white/30">
-          <h4 className="text-lg font-bold text-brand-green mb-2">Clearance Assistance</h4>
-          <p className="text-gray-700 leading-relaxed mb-5 text-sm">
-            End-to-end Customs House Agent (CHA) services — documentation, real-time tracking, and duty
-            assessment support, so you can focus on your business.
-          </p>
-          <h5 className="text-sm font-bold uppercase tracking-wide text-gray-800 mb-3">Essential Custom Forms</h5>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-            {customForms.map((form, i) => (
-              <li key={i}>
-                <a
-                  href={`/doc/${form.file}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 bg-white/50 backdrop-blur-md border border-white/50 p-3 rounded-xl text-xs font-medium text-gray-800 hover:bg-brand-amber hover:text-white hover:border-brand-amber transition-colors duration-300 leading-snug"
-                >
-                  <FileDown className="w-4 h-4 flex-shrink-0" />
-                  {form.name}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </>
-    ),
+    desc: "In-house clearance covering documentation, duty calculation, and GST/EXIM compliance — full control, no outsourcing.",
+    bullets: ["Import/export documentation", "AEO accreditation status"],
+    formsLink: true,
   },
   {
+    size: 'standard',
     icon: Ship,
     name: "Ocean Freight Solutions",
-    subtitle: "Connecting continents seamlessly.",
-    details: [
-      "Full Container Load (FCL)",
-      "LCL consolidation",
-      "Break bulk & project cargo",
-      "Multi-modal transport",
-    ],
-    description: "Cost-efficient sea freight with end-to-end visibility, managing the complexity of port operations for you.",
+    desc: "FCL, LCL, and break-bulk cargo movements, with structured carrier selection and routing for cost and reliability.",
+    bullets: ["Full Container Load (FCL)", "Multi-modal transport"],
   },
   {
-    icon: Truck,
-    name: "Surface Transport & ODC",
-    subtitle: "Reliable road & rail, across India.",
-    details: [
-      "FTL & PTL",
-      "Dedicated cold chain",
-      "Rail cargo services",
-      "Over-dimensional cargo",
-    ],
-    description: "GPS-enabled domestic network for safe, timely delivery across every state in India.",
-  },
-  {
+    size: 'standard',
     icon: Factory,
     name: "Warehousing & Supply Chain",
-    subtitle: "Optimizing inventory and distribution.",
-    details: [
-      "Multi-user & dedicated warehousing",
-      "Inventory & fulfillment",
-      "Packaging, kitting, labeling",
-      "Last-mile optimization",
-    ],
-    description: "Smart, strategically located warehousing that reduces lead times and inventory costs.",
+    desc: "Scalable storage, pick-and-pack, and distribution — fully integrated with freight and transport operations.",
+    bullets: ["Multi-user & dedicated warehousing", "Last-mile optimization"],
   },
   {
-    icon: BarChart2,
-    name: "Technology & Visibility",
-    subtitle: "Data-driven logistics.",
-    details: [
-      "Real-time IoT tracking",
-      "ERP/WMS API integration",
-      "Predictive route optimization",
-      "Automated reporting",
-    ],
-    description: "Complete, transparent control over your cargo, from origin to destination.",
+    size: 'standard',
+    icon: PackageSearch,
+    name: "Asset Management & Tracking",
+    desc: "Full lifecycle tracking for client assets — trusted by IT companies and banks for secure, audit-ready handling.",
+    bullets: ["Condition & custody monitoring", "IT & banking sector programs"],
+  },
+  {
+    size: 'featured',
+    icon: Truck,
+    name: "Surface Transport & ODC",
+    desc: "Local, metro, and interstate transport managed for consistent service levels and full delivery visibility across every state in India.",
   },
 ];
 
-const Services = () => {
-  const [expandedServiceIndex, setExpandedServiceIndex] = useState(null);
+const pillars = [
+  { icon: User, title: "One Point of Contact", desc: "No more chasing multiple vendors. One team manages your entire shipment from origin to destination." },
+  { icon: BarChart2, title: "Total Visibility", desc: "Real-time IoT tracking and ERP/WMS integration mean you see exactly where your cargo is, always." },
+  { icon: ShieldCheck, title: "Compliance Excellence", desc: "In-house customs and audit-ready programs keep IT, banking, and export shipments moving within every regulatory requirement." },
+];
 
-  const toggleExpansion = (index) => {
-    setExpandedServiceIndex(expandedServiceIndex === index ? null : index);
+const Services = () => {
+  const navigate = useNavigate();
+  const [search, setSearch] = useState('');
+
+  const filteredForms = useMemo(() => {
+    const q = search.trim().toUpperCase();
+    if (!q) return customForms;
+    return customForms.filter((form) => form.name.includes(q));
+  }, [search]);
+
+  const scrollToForms = () => {
+    const el = document.getElementById('customs-forms');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  useLayoutEffect(() => {
-    gsap.utils.toArray(".service-item").forEach((item) => {
-      gsap.fromTo(item,
-        { opacity: 0, y: 50 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: item,
-            start: "top 85%",
-            toggleActions: "play none none reverse",
-          },
-        }
-      );
-    });
-
-    return () => ScrollTrigger.getAll().forEach(t => t.kill());
+  // Mandatory scroll-snap fights a page this long — it traps scroll
+  // position on the last snap section and blocks reaching the footer.
+  // Same workaround Home uses: opt this page out entirely.
+  useEffect(() => {
+    document.documentElement.classList.add('no-snap');
+    return () => document.documentElement.classList.remove('no-snap');
   }, []);
 
   return (
     <div>
-      <ServicesShowcase items={serviceCategories} />
-
-      <section className="snap-section py-16 md:py-24 px-6 md:px-12 max-w-7xl mx-auto">
-        <SectionHeading
-          eyebrow="What We Do"
-          title="The Panchathan Advantage"
-          subtitle="Complex supply chains, managed with efficiency, integrity, and modern technology."
+      <SEO
+        title="Logistics Services — Air, Sea & Road Freight, Customs Clearance | Chennai"
+        description="Explore Panchathan Logistics' full range of services from our Chennai HQ: air freight, sea cargo, road transport, customs house agent (CHA) clearance, warehousing and documentation support across Tamil Nadu and India."
+        keywords="freight services Chennai, air freight Tamil Nadu, sea cargo India, customs house agent Chennai, CHA services, warehousing Chennai, road transport India, export import documentation Chennai"
+        path="/services"
+      />
+      {/* HERO */}
+      <section className="relative bg-brand-green text-white pt-32 md:pt-40 pb-16 md:pb-20 overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-[0.08] pointer-events-none"
+          style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed' }}
         />
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="relative max-w-4xl mx-auto px-6 md:px-12"
+        >
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-5 inline-block">
+            Home / Services
+          </span>
+          <h1 className="font-sora text-4xl md:text-6xl font-extrabold mb-6 leading-[1.05] tracking-tight">
+            Our Logistics Capabilities
+          </h1>
+          <p className="text-white/75 text-base md:text-lg max-w-2xl mb-8">
+            Full-cycle supply chain solutions across every mode — from asset tracking to customs
+            clearance, we bring decades of expertise across every freight discipline.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href="#capabilities"
+              className="inline-flex items-center gap-2 bg-brand-amber text-gray-900 font-bold text-sm px-6 py-3 rounded hover:bg-brand-amberDark hover:text-white transition-colors"
+            >
+              View All Services
+            </a>
+            <button
+              type="button"
+              onClick={() => navigate('/contact')}
+              className="inline-flex items-center gap-2 border border-white/50 text-white font-bold text-sm px-6 py-3 rounded hover:bg-white/10 transition-colors"
+            >
+              Talk to an Expert
+            </button>
+          </div>
+        </motion.div>
+      </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {serviceCategories.map((service, i) => {
-            const isExpanded = expandedServiceIndex === i;
-            const hasLongContent = service.longContentJSX;
+      {/* CAPABILITIES BENTO GRID */}
+      <section id="capabilities" className="py-16 md:py-24 px-6 md:px-12 max-w-7xl mx-auto scroll-mt-24">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.4 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="max-w-3xl mb-12 md:mb-16"
+        >
+          <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-gray-400 mb-2">Our Expertise</p>
+          <h2 className="text-2xl md:text-4xl font-sora font-bold text-brand-green mb-3">
+            Everything your freight needs. Under one group.
+          </h2>
+          <p className="text-gray-600 text-base md:text-lg">
+            From air to sea, from customs clearance to final delivery, we bring decades of expertise
+            across every freight discipline.
+          </p>
+        </motion.div>
+
+        <motion.div {...staggerContainer(0.1)} className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6">
+          {bentoServices.map((service, i) => {
+            if (service.size === 'featured') {
+              return (
+                <div
+                  key={i}
+                  className="md:col-span-12 relative overflow-hidden bg-brand-green text-white rounded-lg p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
+                >
+                  {/* Plain (untransformed) box carries the texture so it
+                      stays anchored to the viewport via background-attachment:
+                      fixed — a transform on an animated ancestor breaks that. */}
+                  <div
+                    className="absolute inset-0 opacity-[0.08] pointer-events-none"
+                    style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed' }}
+                  />
+                  <motion.div variants={staggerItem} className="relative md:max-w-2xl">
+                    <service.icon className="w-9 h-9 text-brand-amber mb-3" />
+                    <h4 className="text-xl font-sora font-bold text-white mb-2">{service.name}</h4>
+                    <p className="text-white/75 text-sm md:text-base leading-relaxed">{service.desc}</p>
+                  </motion.div>
+                </div>
+              );
+            }
+
+            const isLarge = service.size === 'large';
+            const isTall = service.size === 'tall';
 
             return (
-              <GlassCard key={i} hover={false} className="service-item p-6 md:p-8 border-t-4 border-t-brand-green">
-                <div className="w-14 h-14 rounded-2xl bg-brand-amber/15 text-brand-amberDark flex items-center justify-center mb-5">
-                  <service.icon className="w-7 h-7" />
-                </div>
-                <h3 className="text-2xl md:text-3xl font-sora font-bold text-gray-900 mb-1">{service.name}</h3>
-                <p className="text-base font-semibold text-brand-green mb-4">{service.subtitle}</p>
-
-                <p className="text-gray-600 leading-relaxed mb-6 text-sm md:text-base">{service.description}</p>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {service.details.map((detail, index) => (
-                    <div key={index} className="flex items-start text-sm font-medium text-gray-800">
-                      <motion.svg
-                        initial={{ scale: 0 }}
-                        whileInView={{ scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.1 + index * 0.08, type: "spring", stiffness: 500, damping: 30 }}
-                        className="w-4 h-4 text-brand-amber mr-2 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"
-                      >
-                        <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
-                      </motion.svg>
-                      {detail}
-                    </div>
-                  ))}
-                </div>
-
-                {hasLongContent && (
-                  <div className={`transition-all duration-700 overflow-hidden ${isExpanded ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                    {service.longContentJSX}
-                  </div>
+              <motion.div
+                key={i}
+                variants={staggerItem}
+                className={`relative overflow-hidden border border-gray-200 rounded-lg p-8 flex flex-col justify-between hover:border-brand-green transition-colors ${
+                  isLarge ? 'md:col-span-8 bg-white' : isTall ? 'md:col-span-4 bg-gray-50' : 'md:col-span-4 bg-white'
+                }`}
+              >
+                {isLarge && (
+                  <service.icon className="absolute -top-2 -right-2 w-40 h-40 text-brand-green/[0.06] pointer-events-none" />
                 )}
-
-                {hasLongContent && (
-                  <ToggleButton isExpanded={isExpanded} onClick={() => toggleExpansion(i)} />
+                <div className="relative">
+                  <service.icon className="w-8 h-8 text-brand-green mb-4" />
+                  <h4 className="text-lg md:text-xl font-sora font-bold text-gray-900 mb-2">{service.name}</h4>
+                  <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-4">{service.desc}</p>
+                  {service.bullets && (
+                    <ul className="space-y-1.5 mb-2">
+                      {service.bullets.map((b) => (
+                        <li key={b} className="flex items-center gap-2 text-xs md:text-sm font-medium text-gray-700">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-brand-amberDark flex-shrink-0" />
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                {service.formsLink && (
+                  <button
+                    type="button"
+                    onClick={scrollToForms}
+                    className="group/link relative mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-brand-green hover:text-brand-amberDark transition-colors self-start"
+                  >
+                    Browse customs forms
+                    <ArrowDown className="w-4 h-4 group-hover/link:translate-y-0.5 transition-transform" />
+                  </button>
                 )}
-              </GlassCard>
+              </motion.div>
             );
           })}
+        </motion.div>
+      </section>
+
+      {/* WHY PARTNER WITH US */}
+      <section className="py-16 md:py-24 px-6 md:px-12 max-w-7xl mx-auto border-t border-gray-200">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.4 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="text-center mb-12 md:mb-16"
+        >
+          <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-gray-400 mb-2">Why Partner With Us</p>
+          <h2 className="text-2xl md:text-4xl font-sora font-bold text-brand-green">Logistics that works as hard as you do.</h2>
+        </motion.div>
+        <motion.div {...staggerContainer(0.12)} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {pillars.map((p, i) => (
+            <motion.div key={i} variants={staggerItem} className="bg-white p-8 border border-gray-200 rounded-lg">
+              <div className="w-12 h-12 bg-gray-50 rounded-md flex items-center justify-center mb-4 text-brand-green">
+                <p.icon className="w-6 h-6" />
+              </div>
+              <h4 className="text-lg font-sora font-bold text-gray-900 mb-2">{p.title}</h4>
+              <p className="text-sm md:text-base text-gray-600 leading-relaxed">{p.desc}</p>
+            </motion.div>
+          ))}
+        </motion.div>
+      </section>
+
+      <section id="customs-forms" className="py-16 md:py-24 px-6 md:px-12 max-w-7xl mx-auto scroll-mt-24 border-t border-gray-200">
+        <div className="bg-white border border-gray-200 rounded-lg p-6 md:p-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.4 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10"
+          >
+            <div>
+              <span className="inline-flex items-center gap-2 text-xs md:text-sm font-bold uppercase tracking-[0.2em] text-brand-amberDark mb-3">
+                <FolderSearch className="w-4 h-4" />
+                Clearance Assistance
+              </span>
+              <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-brand-green leading-tight">
+                Customs Documentation Library
+              </h2>
+              <p className="mt-3 text-base text-gray-600 max-w-2xl">
+                End-to-end Customs House Agent (CHA) services — documentation, real-time tracking, and duty
+                assessment support, so you can focus on your business.
+              </p>
+            </div>
+
+            <div className="relative w-full md:w-80 flex-shrink-0">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search forms — e.g. Drawback, KYC..."
+                className="w-full pl-11 pr-10 py-3 rounded border border-gray-300 bg-white text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition-colors"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  aria-label="Clear search"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </motion.div>
+
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-4">
+            {filteredForms.length} of {customForms.length} forms
+          </p>
+
+          {filteredForms.length > 0 ? (
+            <motion.div key={search} {...staggerContainer(0.02)} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {filteredForms.map((form) => {
+                const { Icon, tint } = getFormMeta(form.file);
+                return (
+                  <motion.a
+                    key={form.file}
+                    variants={staggerItem}
+                    href={`/doc/${form.file}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileHover={{ y: -3 }}
+                    transition={{ type: "spring", stiffness: 350, damping: 24 }}
+                    className="group flex items-center gap-3 bg-white border border-gray-200 rounded-lg p-3.5 hover:border-brand-green transition-colors"
+                  >
+                    <div className={`w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${tint}`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <span className="flex-1 text-xs md:text-[13px] font-semibold text-gray-800 leading-snug">
+                      {form.name}
+                    </span>
+                    <Download className="w-4 h-4 text-gray-300 group-hover:text-brand-amberDark flex-shrink-0 transition-colors" />
+                  </motion.a>
+                );
+              })}
+            </motion.div>
+          ) : (
+            <div className="flex flex-col items-center text-center py-14">
+              <div className="w-14 h-14 rounded-lg bg-gray-100 text-gray-400 flex items-center justify-center mb-4">
+                <FolderSearch className="w-7 h-7" />
+              </div>
+              <p className="font-bold text-gray-700">No forms match "{search}"</p>
+              <p className="text-sm text-gray-500 mt-1">Try a different keyword, or clear the search.</p>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-16 md:mt-24 -mx-6 md:-mx-12">
+          <DeliveryProcess
+            steps={processSteps}
+            eyebrow="Our Process"
+            title="How It Works"
+            subtitle="From first request to signed delivery — a clear, accountable path every time."
+          />
+        </div>
+
+        <div className="relative overflow-hidden rounded-lg bg-brand-green px-8 py-12 md:px-16 md:py-14 text-center mt-10 md:mt-14">
+          {/* Plain (untransformed) box carries the texture so it stays
+              anchored to the viewport via background-attachment: fixed —
+              a transform on an animated ancestor would break that and
+              cause a visible seam against the Footer's own texture. */}
+          <div
+            className="absolute inset-0 opacity-[0.08] pointer-events-none"
+            style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed' }}
+          />
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.4 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="relative"
+          >
+            <h3 className="font-sora text-2xl md:text-3xl xl:text-4xl font-extrabold text-white mb-3">
+              Ready to Move Smarter?
+            </h3>
+            <p className="text-white/75 max-w-xl mx-auto mb-8">
+              We're here to help you grow without hassle — no call centres, no runaround. Just experienced
+              people ready to help.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate('/contact')}
+              className="inline-flex items-center gap-2 bg-brand-amber text-gray-900 font-bold text-sm px-8 py-4 rounded hover:bg-white transition-colors"
+            >
+              Get a Custom Quote
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </motion.div>
         </div>
       </section>
     </div>

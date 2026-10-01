@@ -1,21 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-IN">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="./favlogo.png" />
+    <link rel="icon" href="%PUBLIC_URL%/favlogo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="One Stop For All Your Courier and Cargo Needs."
-    />
-    <link rel="" href="./favlogo.png" />
+    <meta name="theme-color" content="#175d29" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+
+    <!--
+      Note: meta description, keywords, and canonical are set per-page by the
+      <SEO> component (react-helmet-async) for the 5 in-app routes. Google's
+      renderer executes JS and will pick those up; only the tags below stay
+      static because social-preview crawlers (Facebook, WhatsApp, Slack, etc.)
+      don't execute JS and only ever see this raw HTML.
+    -->
+    <meta name="author" content="Panchathan Logistics" />
+
+    <!-- Geo targeting: Chennai, Tamil Nadu, India -->
+    <meta name="geo.region" content="IN-TN" />
+    <meta name="geo.placename" content="Chennai" />
+    <meta name="geo.position" content="12.9716;80.1256" />
+    <meta name="ICBM" content="12.9716, 80.1256" />
+
+    <!-- Open Graph (static fallback for non-JS social crawlers) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Panchathan Logistics" />
+    <meta property="og:title" content="Panchathan Logistics — Courier & Cargo Services in Chennai, Tamil Nadu" />
+    <meta property="og:description" content="One stop for all your courier and cargo needs — serving Chennai, Tamil Nadu and pan-India with air, sea and road freight." />
+    <meta property="og:url" content="https://panchathanlogistics.com/" />
+    <meta property="og:image" content="https://panchathanlogistics.com/Logo.png" />
+    <meta property="og:locale" content="en_IN" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Panchathan Logistics — Courier & Cargo Services in Chennai, Tamil Nadu" />
+    <meta name="twitter:description" content="One stop for all your courier and cargo needs — serving Chennai, Tamil Nadu and pan-India." />
+    <meta name="twitter:image" content="https://panchathanlogistics.com/Logo.png" />
+
     <!--
       manifest.json provides metadata used when your web app is installed on a
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
     -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&display=swap" rel="stylesheet" />
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
@@ -26,10 +55,44 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>Panchathan Logistics</title>
+    <title>Panchathan Logistics — Courier & Cargo Services in Chennai, Tamil Nadu</title>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "LogisticsBusiness",
+        "name": "Panchathan Logistics",
+        "image": "https://panchathanlogistics.com/Logo.png",
+        "url": "https://panchathanlogistics.com/",
+        "telephone": "+91-73394-33590",
+        "priceRange": "₹₹",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Plot No. 65, Annai Therasa Street, V.O.C. Nagar, Pammal",
+          "addressLocality": "Chennai",
+          "addressRegion": "Tamil Nadu",
+          "postalCode": "600075",
+          "addressCountry": "IN"
+        },
+        "geo": { "@type": "GeoCoordinates", "latitude": 12.9716, "longitude": 80.1256 },
+        "areaServed": [
+          { "@type": "City", "name": "Chennai" },
+          { "@type": "State", "name": "Tamil Nadu" },
+          { "@type": "Country", "name": "India" }
+        ],
+        "department": [
+          { "@type": "LogisticsBusiness", "name": "Panchathan Logistics Kochi", "address": "New/63/3289, MBA Residency, Brother Mayooras Road, Kochi - 682016" },
+          { "@type": "LogisticsBusiness", "name": "Panchathan Logistics Bangalore", "address": "No.29, 6th Main, 10th Cross, Sampangi Ram Nagar, Bangalore - 560027" },
+          { "@type": "LogisticsBusiness", "name": "Panchathan Logistics Hyderabad", "address": "1-8-506/B/1, Prakash Nagar, Begumpet, Hyderabad - 500016" },
+          { "@type": "LogisticsBusiness", "name": "Panchathan Logistics Mumbai", "address": "Shop 03A/1B, Shanti Nagar, Opp. Marol MIDC Bus Depot, Andheri East, Mumbai - 400093" },
+          { "@type": "LogisticsBusiness", "name": "Panchathan Logistics Kolkata", "address": "#193A/17 Picnic Garden Road, Kolkata - 700039" },
+          { "@type": "LogisticsBusiness", "name": "Panchathan Logistics Delhi", "address": "Plot No. A-50, Near Grand Shoba Hotel, Road No. 6, Mahipalpur, New Delhi - 110037" }
+        ]
+      }
+    </script>
   </head>
   <body>
-    <noscript>One Stop For All Your Courier and Cargo Needs.</noscript>
+    <noscript>Panchathan Logistics — One Stop For All Your Courier and Cargo Needs across Chennai, Tamil Nadu and India.</noscript>
     <div id="root"></div>
     <!--
       This HTML file is a template.

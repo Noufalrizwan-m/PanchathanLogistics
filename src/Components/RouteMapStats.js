@@ -42,7 +42,7 @@ const StatCard = ({ stat, delay, className = '' }) => {
     <motion.div
       initial={{ opacity: 0, y: 30, scale: 0.92 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true, amount: 0.4 }}
+      viewport={{ once: false, amount: 0.4 }}
       transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
       className={className}
     >
@@ -92,17 +92,17 @@ const RouteMapStats = () => {
               strokeLinecap="round"
               initial={{ pathLength: 0, opacity: 0 }}
               whileInView={{ pathLength: 1, opacity: 0.5 }}
-              viewport={{ once: true, amount: 0.5 }}
+              viewport={{ once: false, amount: 0.5 }}
               transition={{ duration: 2, ease: 'easeInOut' }}
               style={{ vectorEffect: 'non-scaling-stroke' }}
             />
             <motion.circle
               cx="100" cy="220" r="6" fill={GREEN}
-              initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
+              initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: false }} transition={{ delay: 0.2 }}
             />
             <motion.circle
               cx="700" cy="90" r="6" fill="#f5a623"
-              initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 2 }}
+              initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: false }} transition={{ delay: 2 }}
             />
           </svg>
 
