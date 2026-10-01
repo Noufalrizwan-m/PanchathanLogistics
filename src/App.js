@@ -1,6 +1,5 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { useRef, useState, useEffect } from "react";
+import { useEffect } from "react";
 
 // Import Components
 import Header from '../src/Components/header';

@@ -11,7 +11,7 @@ import GlassButton from '../Components/ui/GlassButton';
 import SectionHeading from '../Components/ui/SectionHeading';
 import MarqueeStrip from '../Components/ui/MarqueeStrip';
 import SEO from '../Components/SEO';
-import { staggerContainer, staggerItem, fadeUp, fadeIn } from '../lib/motion';
+import { staggerContainer, staggerItem, fadeIn } from '../lib/motion';
 
 const homeJsonLd = {
   '@context': 'https://schema.org',
