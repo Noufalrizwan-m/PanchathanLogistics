@@ -154,7 +154,7 @@ const BranchesSection = () => {
               Seamless Logistics, Coast-to-Coast
             </motion.h3>
             <motion.p variants={staggerItem} className="text-base text-gray-700 leading-relaxed mb-8">
-              Strategic hubs across every major commercial corridor — from South Indian ports to the industrial North — for fast, compliant delivery.
+              Strategic hubs across every major commercial corridor from South Indian ports to the industrial North for fast, compliant delivery.
             </motion.p>
 
             <ul className="space-y-3 mb-10">

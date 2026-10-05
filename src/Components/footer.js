@@ -16,7 +16,7 @@ const coreServices = ['Air Freight', 'Ocean Freight', 'Customs Clearance (Essent
 const socials = [
   { icon: Facebook, href: 'https://www.facebook.com/profile.php?id=100066693142443' },
   { icon: Instagram, href: 'https://www.instagram.com/panchathan_logistics/' },
-  { icon: Linkedin, href: 'https://www.linkedin.com/in/a-mohammed-jaffar-863003299' },
+  { icon: Linkedin, href: 'https://www.linkedin.com/company/panchathan-logistics-pvt-ltd/' },
 ];
 
 const Footer = () => (
@@ -36,7 +36,7 @@ const Footer = () => (
             <img src="/Logo.png" alt="Panchathan Logistics" className="h-12 w-auto object-contain" />
           </Link>
           <p className="text-sm text-white/70 leading-relaxed">
-            One stop for your courier &amp; cargo needs — across India, and beyond.
+            One stop for your courier &amp; cargo needs across India, and beyond.
           </p>
         </div>
 

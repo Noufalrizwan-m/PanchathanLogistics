@@ -9,7 +9,7 @@ const milestones = [
   {
     year: '2019',
     title: 'Foundation',
-    desc: "Started as a specialized freight forwarder in Chennai, challenging fragmented logistics with one unified, accountable model.",
+    desc: "Started as a specialized IT asset Management and other cargo services in Chennai, challenging fragmented logistics with one unified, accountable model.",
   },
   {
     year: '2021',
@@ -56,35 +56,90 @@ const About = () => {
         path="/about"
       />
       {/* HERO */}
-      <section className="relative bg-brand-green text-white overflow-hidden pt-28 md:pt-32 pb-16 md:pb-20">
+
+      <section className="relative bg-brand-green text-white overflow-hidden pt-8 md:pt-12 pb-16 md:pb-20">
         <div
           className="absolute inset-0 opacity-[0.08] pointer-events-none"
           style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed' }}
         />
-        <div className="relative max-w-7xl mx-auto px-6 md:px-12 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-5 inline-block">
-              Home / About Us
-            </span>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-sora font-extrabold text-white mb-6 leading-[1.05] tracking-tight">
-              Pioneering Full Asset Management Across India
-            </h1>
-            <p className="text-lg text-white/75 mb-8 max-w-xl leading-relaxed">
-              Built on absolute precision and accountability. From IT and banking sector assets to
-              international export, we own the journey — eliminating friction across the modern supply chain.
-            </p>
-            <button
-              type="button"
-              onClick={scrollToPhilosophy}
-              className="inline-flex items-center gap-2 bg-brand-amber text-gray-900 font-bold text-sm px-6 py-3 rounded-md hover:bg-white transition-colors"
+        <section className="relative bg-brand-white overflow-hidden ">
+          <div
+            className="absolute pointer-events-none"
+            style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed' }}
+          />
+          <div className="relative max-w-5xl mx-auto ">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.4 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="mb-10 md:mb-12 border-b border-white/20 pb-4"
             >
-              Our Approach
-            </button>
-          </motion.div>
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-5 inline-block">
+                Home / About Us
+              </span>
+              <h2 className="text-2xl md:text-4xl font-sora font-bold text-white">Leadership</h2>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.4 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8"
+            >
+              <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-lg border border-white/20 bg-white overflow-hidden flex-shrink-0">
+                <img
+                  src="/ceo.png"
+                  alt="CEO"
+                  className="w-full h-full object-cover object-center"
+                />
+              </div>
+              <div className="text-center mt-4 sm:text-left">
+                <h3 className="text-lg font-sora font-bold text-white"> Mohammed Jaffar Bin Azeez Basha</h3>
+                <p className="text-sm text-brand-amber font-bold uppercase tracking-wide mb-3">
+                  Founder &amp; Chief Executive Officer
+                </p>
+                <p className="text-white/75 text-sm md:text-base max-w-xl leading-relaxed">
+                  "Our mission isn't to be the largest in logistics, but the most trusted partner behind every
+                  successful delivery."
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+      </section>
+      <section className="relative overflow-hidden py-16 md:py-24 bg-white">
+
+        {/* Background pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.1] pointer-events-none"
+          style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed', filter: 'invert(1)' }}
+
+        />
+
+        <div className="relative max-w-7xl mx-auto px-6 md:px-12 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">          <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-sora font-extrabold text-[#175d29] mb-6 leading-[1.05] tracking-tight">
+            Pioneering Full Asset Management Across India
+          </h1>
+
+          <p className="text-lg text-[#175d29] mb-8 max-w-xl leading-relaxed">
+            Built on absolute precision and accountability. From IT and banking sector assets to
+            international export, we own the journey eliminating friction across the modern supply chain.
+          </p>
+
+          <button
+            type="button"
+            onClick={scrollToPhilosophy}
+            className="inline-flex items-center gap-2 bg-brand-amber text-gray-900 font-bold text-sm px-6 py-3 rounded-md hover:bg-white transition-colors"
+          >
+            Our Approach
+          </button>
+        </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -101,7 +156,6 @@ const About = () => {
           </motion.div>
         </div>
       </section>
-
       {/* HERITAGE — sits directly on the animated shader background */}
       <section className="relative py-16 md:py-24 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
@@ -169,12 +223,12 @@ const About = () => {
             <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-brand-amberDark mb-2">Philosophy</p>
             <h2 className="text-2xl md:text-4xl font-sora font-bold text-brand-green mb-6">The Full Asset Management Advantage</h2>
             <p className="text-base md:text-lg text-gray-700 mb-5 leading-relaxed">
-              Fragmentation breeds failure. Traditional logistics relies on a web of third parties — leading
+              Fragmentation breeds failure. Traditional logistics relies on a web of third parties leading
               to miscommunication, delays, and no one accountable when it matters most.
             </p>
             <p className="text-base text-gray-600 mb-8 leading-relaxed">
               At Panchathan, we own the journey. From the moment your asset leaves the loading dock to its
-              final destination, it stays within our controlled, tracked network — one point of contact,
+              final destination, it stays within our controlled, tracked network one point of contact,
               zero finger-pointing.
             </p>
             <ul className="space-y-3">
@@ -220,50 +274,13 @@ const About = () => {
       </section>
 
       {/* LEADERSHIP */}
-      <section className="relative bg-brand-green overflow-hidden py-16 md:py-24">
-        <div
-          className="absolute inset-0 opacity-[0.08] pointer-events-none"
-          style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed' }}
-        />
-        <div className="relative max-w-5xl mx-auto px-6 md:px-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.4 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-10 md:mb-12 border-b border-white/20 pb-4"
-          >
-            <h2 className="text-2xl md:text-4xl font-sora font-bold text-white">Leadership</h2>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.4 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8"
-          >
-            <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-lg border border-white/20 bg-white flex items-center justify-center flex-shrink-0">
-              <span className="text-4xl font-sora font-extrabold text-brand-green">AJ</span>
-            </div>
-            <div className="text-center sm:text-left">
-              <h3 className="text-lg font-sora font-bold text-white">A. Mohammed Jaffar</h3>
-              <p className="text-sm text-brand-amber font-bold uppercase tracking-wide mb-3">
-                Founder &amp; Chief Executive Officer
-              </p>
-              <p className="text-white/75 text-sm md:text-base max-w-xl leading-relaxed">
-                "Our mission isn't to be the largest in logistics, but the most trusted partner behind every
-                successful delivery."
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+
 
       {/* NATIONWIDE REACH / CTA */}
-      <section className="relative  py-16 md:py-24 overflow-hidden">
+      <section className="relative  py-16 md:py-24 bg-white overflow-hidden">
         <div
-          className="absolute inset-0 opacity-[0.08] pointer-events-none"
-          style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed' }}
+          className="absolute inset-0 opacity-[0.1] pointer-events-none"
+          style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed', filter: 'invert(1)' }}
         />
         <motion.div
           initial={{ opacity: 0, y: 24 }}

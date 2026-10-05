@@ -45,10 +45,10 @@ const getFormMeta = (file) => {
 };
 
 const processSteps = [
-  { icon: ClipboardList, title: "Request a Quote", desc: "Tell us what you're shipping — we scope the right mode, route, and cost." },
+  { icon: ClipboardList, title: "Request a Quote", desc: "Tell us what you're shipping, we scope the right mode, route, and cost." },
   { icon: FileCheck2, title: "Documentation", desc: "We prepare and verify customs paperwork before anything moves." },
   { icon: PackageCheck, title: "Pickup & Handling", desc: "Cargo is collected, scanned, and staged at the nearest branch." },
-  { icon: Truck, title: "In Transit", desc: "Live tracking across air, sea, rail, or road — every leg logged." },
+  { icon: Truck, title: "In Transit", desc: "Live tracking across air, sea, rail, or road every leg logged." },
   { icon: CheckCircle2, title: "Delivered & Signed", desc: "Proof of delivery at the doorstep, accountability to the last mile." },
 ];
 
@@ -57,44 +57,45 @@ const processSteps = [
 const bentoServices = [
   {
     size: 'large',
+    icon: PackageSearch,
+    name: "Asset Management & Tracking",
+    desc: "Full lifecycle tracking for client assets trusted by IT companies and banks for secure, audit-ready handling.",
+    bullets: ["Condition & custody monitoring", "IT & banking sector programs"],
+  },
+  {
+    size: 'standard',
     icon: Plane,
     name: "Air Freight Forwarding",
-    desc: "Express, priority, and consolidated air cargo to India's major trade lanes — managed end-to-end for speed and schedule integrity.",
+    desc: "Express, priority, and consolidated air cargo to India's major trade lanes managed end-to-end for speed and schedule integrity.",
     bullets: ["IATA-certified handling", "Charter & consolidation services"],
   },
   {
     size: 'tall',
     icon: Shield,
     name: "Customs & Compliance",
-    desc: "In-house clearance covering documentation, duty calculation, and GST/EXIM compliance — full control, no outsourcing.",
+    desc: "In-house clearance covering documentation, duty calculation, and GST/EXIM compliance full control, no outsourcing.",
     bullets: ["Import/export documentation", "AEO accreditation status"],
     formsLink: true,
   },
-  {
-    size: 'standard',
-    icon: Ship,
-    name: "Ocean Freight Solutions",
-    desc: "FCL, LCL, and break-bulk cargo movements, with structured carrier selection and routing for cost and reliability.",
-    bullets: ["Full Container Load (FCL)", "Multi-modal transport"],
-  },
+  // {
+  //   size: 'standard',
+  //   icon: Ship,
+  //   name: "Ocean Freight Solutions",
+  //   desc: "FCL, LCL, and break-bulk cargo movements, with structured carrier selection and routing for cost and reliability.",
+  //   bullets: ["Full Container Load (FCL)", "Multi-modal transport"],
+  // },
   {
     size: 'standard',
     icon: Factory,
     name: "Warehousing & Supply Chain",
-    desc: "Scalable storage, pick-and-pack, and distribution — fully integrated with freight and transport operations.",
+    desc: "Scalable storage, pick-and-pack, and distribution fully integrated with freight and transport operations.",
     bullets: ["Multi-user & dedicated warehousing", "Last-mile optimization"],
   },
+  
   {
     size: 'standard',
-    icon: PackageSearch,
-    name: "Asset Management & Tracking",
-    desc: "Full lifecycle tracking for client assets — trusted by IT companies and banks for secure, audit-ready handling.",
-    bullets: ["Condition & custody monitoring", "IT & banking sector programs"],
-  },
-  {
-    size: 'featured',
     icon: Truck,
-    name: "Surface Transport & ODC",
+    name: "Surface Transport",
     desc: "Local, metro, and interstate transport managed for consistent service levels and full delivery visibility across every state in India.",
   },
 ];
@@ -155,7 +156,7 @@ const Services = () => {
             Our Logistics Capabilities
           </h1>
           <p className="text-white/75 text-base md:text-lg max-w-2xl mb-8">
-            Full-cycle supply chain solutions across every mode — from asset tracking to customs
+            Full cycle supply chain solutions across every mode from asset tracking to customs
             clearance, we bring decades of expertise across every freight discipline.
           </p>
           <div className="flex flex-wrap gap-3">
@@ -307,7 +308,7 @@ const Services = () => {
                 Customs Documentation Library
               </h2>
               <p className="mt-3 text-base text-gray-600 max-w-2xl">
-                End-to-end Customs House Agent (CHA) services — documentation, real-time tracking, and duty
+                End-to-end Customs House Agent (CHA) services documentation, real-time tracking, and duty
                 assessment support, so you can focus on your business.
               </p>
             </div>

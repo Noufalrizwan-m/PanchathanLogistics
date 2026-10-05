@@ -94,7 +94,7 @@ const Contact = () => {
       />
       {/* HERO */}
       <section
-        className="relative bg-brand-green text-white pt-32 md:pt-40 pb-16 md:pb-20 overflow-hidden flex items-center justify-center min-h-[50vh]"
+        className="relative bg-brand-green text-white  overflow-hidden flex items-center justify-center min-h-[50vh]"
       >
         <div
           className="absolute inset-0 opacity-[0.08] pointer-events-none"
@@ -104,12 +104,15 @@ const Contact = () => {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="relative z-10 max-w-4xl mx-auto px-6 md:px-12 text-center"
+          className="relative max-w-4xl mx-auto  "
         >
+          <span className="text-xs text-white/60 font-bold uppercase tracking-[0.2em] mb-5 inline-block">
+            Home / Contact Us
+          </span>
           <h1 className="font-sora text-4xl md:text-6xl font-extrabold mb-6 tracking-tight">
             Nationwide Reach, Personal Response
           </h1>
-          <p className="text-white/75 text-base md:text-lg max-w-2xl mx-auto">
+          <p className="text-white/75 text-base md:text-lg max-w-2xl ">
             Whether you need a quote for one shipment or a full asset-management program, our team is
             ready to help.
           </p>
