@@ -9,7 +9,7 @@ const milestones = [
   {
     year: '2019',
     title: 'Foundation',
-    desc: "Started as a specialized IT asset Management and other cargo services in Chennai, challenging fragmented logistics with one unified, accountable model.",
+    desc: "Started as a specialized IT asset management and other cargo services in Chennai, challenging fragmented logistics with one unified, accountable model.",
   },
   {
     year: '2021',
@@ -44,58 +44,54 @@ const About = () => {
   }, []);
 
   const scrollToPhilosophy = () => {
-    document.getElementById('philosophy')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('philosophy')?.scrollIntoView({ behavior: 'auto', block: 'start' });
   };
 
   return (
     <div>
-      <SEO
-        title="About Us — Chennai-Based Logistics Company Serving India"
-        description="Panchathan Logistics started as a specialized freight forwarder in Chennai, Tamil Nadu, and has grown into a nationwide courier and cargo network with branches in Kochi, Bangalore, Hyderabad, Mumbai, Kolkata and Delhi."
-        keywords="Panchathan Logistics Chennai, logistics company history Tamil Nadu, freight forwarder India, about Panchathan Logistics"
-        path="/about"
-      />
+      <SEO path="/about" />
       {/* HERO */}
 
       <section className="relative bg-brand-green text-white overflow-hidden pt-8 md:pt-12 pb-16 md:pb-20">
         <div
           className="absolute inset-0 opacity-[0.08] pointer-events-none"
-          style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed' }}
+          style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll' }}
         />
         <section className="relative bg-brand-white overflow-hidden ">
           <div
             className="absolute pointer-events-none"
-            style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed' }}
+            style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll' }}
           />
-          <div className="relative max-w-5xl mx-auto ">
+          <div className="relative max-w-5xl mx-auto px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.4 }}
+              viewport={{ once: true, amount: 0.4 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="mb-10 md:mb-12 border-b border-white/20 pb-4"
             >
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-5 inline-block">
                 Home / About Us
               </span>
-              <h2 className="text-2xl md:text-4xl font-sora font-bold text-white">Leadership</h2>
+              <h1 className="text-3xl md:text-5xl font-sora font-bold text-white">The people behind your shipment</h1>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.4 }}
+              viewport={{ once: true, amount: 0.4 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8"
             >
               <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-lg border border-white/20 bg-white overflow-hidden flex-shrink-0">
                 <img
-                  src="/ceo.png"
-                  alt="CEO"
+                  src="/ceo-288.webp"
+                  width="288" height="230"
+                  alt="Mohammed Jaffar Bin Azeez Basha, founder and CEO"
                   className="w-full h-full object-cover object-center"
                 />
               </div>
               <div className="text-center mt-4 sm:text-left">
-                <h3 className="text-lg font-sora font-bold text-white"> Mohammed Jaffar Bin Azeez Basha</h3>
+                <h2 className="text-lg font-sora font-bold text-white"> Mohammed Jaffar Bin Azeez Basha</h2>
                 <p className="text-sm text-brand-amber font-bold uppercase tracking-wide mb-3">
                   Founder &amp; Chief Executive Officer
                 </p>
@@ -109,12 +105,12 @@ const About = () => {
         </section>
 
       </section>
-      <section className="relative overflow-hidden py-16 md:py-24 bg-white">
+      <section className="relative overflow-hidden section-space bg-white">
 
         {/* Background pattern */}
         <div
           className="absolute inset-0 opacity-[0.1] pointer-events-none"
-          style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed', filter: 'invert(1)' }}
+          style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll', filter: 'invert(1)' }}
 
         />
 
@@ -123,13 +119,13 @@ const About = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-sora font-extrabold text-[#175d29] mb-6 leading-[1.05] tracking-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-sora font-extrabold text-[#175d29] mb-6 leading-[1.05] tracking-tight">
             Pioneering Full Asset Management Across India
-          </h1>
+          </h2>
 
           <p className="text-lg text-[#175d29] mb-8 max-w-xl leading-relaxed">
             Built on absolute precision and accountability. From IT and banking sector assets to
-            international export, we own the journey eliminating friction across the modern supply chain.
+            international export, we coordinate the journey, reducing friction across the modern supply chain.
           </p>
 
           <button
@@ -148,7 +144,10 @@ const About = () => {
             className="relative h-[320px] sm:h-[400px] lg:h-[480px] w-full rounded-lg overflow-hidden border border-white/20 shadow-sm"
           >
             <img
-              src="/ofc.png"
+              src="/ofc-960.webp"
+              srcSet="/ofc-640.webp 640w, /ofc-960.webp 960w"
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              loading="lazy" width="1366" height="768"
               alt="Panchathan Logistics office and warehouse"
               className="w-full h-full object-cover"
             />
@@ -157,17 +156,17 @@ const About = () => {
         </div>
       </section>
       {/* HERITAGE — sits directly on the animated shader background */}
-      <section className="relative py-16 md:py-24 border-b border-gray-200">
+      <section className="relative section-space border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.4 }}
+            viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="text-center mb-14 md:mb-16"
+            className="text-center mb-8 md:mb-10"
           >
-            <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-gray-400 mb-2">Heritage</p>
-            <h2 className="text-2xl md:text-4xl font-sora font-bold text-brand-green">7+ Years of Operational Excellence</h2>
+            <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-gray-500 mb-2">Heritage</p>
+            <h2 className="text-2xl md:text-4xl font-sora font-bold text-brand-green">Serving businesses since 2019</h2>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
@@ -176,13 +175,13 @@ const About = () => {
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.5 }}
+                viewport={{ once: true, amount: 0.5 }}
                 transition={{ duration: 0.5, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
               >
                 <div className={`w-2.5 h-2.5 rounded-full mb-4 ${i === 0 ? 'bg-brand-amber' : 'bg-brand-green'}`} />
                 <p className="text-xs font-bold uppercase tracking-widest text-brand-amberDark mb-1">{m.year}</p>
                 <h3 className="text-lg md:text-xl font-sora font-bold text-gray-900 mb-2">{m.title}</h3>
-                <p className="text-sm md:text-base text-gray-600 leading-relaxed">{m.desc}</p>
+                <p className="text-base text-gray-600 leading-relaxed">{m.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -190,25 +189,25 @@ const About = () => {
       </section>
 
       {/* PHILOSOPHY */}
-      <section id="philosophy" className="relative bg-white py-16 md:py-24 border-b border-gray-200 scroll-mt-24 overflow-hidden">
+      <section id="philosophy" className="relative bg-white section-space border-b border-gray-200 scroll-mt-24 overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.1] pointer-events-none"
-          style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed', filter: 'invert(1)' }}
+          style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll', filter: 'invert(1)' }}
         />
         <div className="relative max-w-7xl mx-auto px-6 md:px-12 grid lg:grid-cols-2 gap-12 items-center">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: false, amount: 0.4 }}
+            viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="order-2 lg:order-1 relative h-[320px] md:h-[440px] rounded-lg border border-gray-200 overflow-hidden bg-brand-green"
           >
             <div
               className="absolute inset-0 opacity-[0.08] pointer-events-none"
-              style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat' }}
+              style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat' }}
             />
             <img
-              src="/truck1.png"
+              src="/truck1-640.webp" loading="lazy" width="433" height="577"
               alt="Panchathan Logistics cargo truck"
               className="relative w-full h-full object-contain p-6"
             />
@@ -216,7 +215,7 @@ const About = () => {
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: false, amount: 0.4 }}
+            viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="order-1 lg:order-2"
           >
@@ -228,7 +227,7 @@ const About = () => {
             </p>
             <p className="text-base text-gray-600 mb-8 leading-relaxed">
               At Panchathan, we own the journey. From the moment your asset leaves the loading dock to its
-              final destination, it stays within our controlled, tracked network one point of contact,
+              final destination, it stays within our controlled, tracked network, with one point of contact,
               zero finger-pointing.
             </p>
             <ul className="space-y-3">
@@ -244,14 +243,14 @@ const About = () => {
       </section>
 
       {/* OPERATIONAL PILLARS */}
-      <section className=" py-16 md:py-24 border-b border-gray-200">
+      <section className=" section-space border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.4 }}
+            viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="text-center mb-12 md:mb-16"
+            className="text-center mb-8 md:mb-10"
           >
             <h2 className="text-2xl md:text-4xl font-sora font-bold text-brand-green">Operational Pillars</h2>
           </motion.div>
@@ -266,7 +265,7 @@ const About = () => {
                   <p.icon className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg md:text-xl font-sora font-bold text-gray-900 mb-3">{p.title}</h3>
-                <p className="text-sm md:text-base text-gray-600 leading-relaxed">{p.desc}</p>
+                <p className="text-base text-gray-600 leading-relaxed">{p.desc}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -277,15 +276,15 @@ const About = () => {
 
 
       {/* NATIONWIDE REACH / CTA */}
-      <section className="relative  py-16 md:py-24 bg-white overflow-hidden">
+      <section className="relative  section-space bg-white overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.1] pointer-events-none"
-          style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed', filter: 'invert(1)' }}
+          style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll', filter: 'invert(1)' }}
         />
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.4 }}
+          viewport={{ once: true, amount: 0.4 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="relative max-w-5xl mx-auto px-6 md:px-12 flex flex-col items-center text-center"
         >

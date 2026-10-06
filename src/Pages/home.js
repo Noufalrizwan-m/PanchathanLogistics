@@ -1,6 +1,6 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useInView, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Search, Hash, MapPin, Plane, Truck, Anchor, Package, Factory, Wrench, Shield, UserCheck, Zap, Compass, Radar, Network, Headphones, FileCheck2, PackageSearch, CheckCircle2, XCircle, AlertCircle, Phone, MessageCircle, X, Hand, ArrowRight, Warehouse, Landmark, Globe } from "lucide-react";
+import { Search, Hash, MapPin, Plane, Truck, Anchor, Package, Factory, Wrench, Shield, UserCheck, Zap, Compass, Radar, Network, Headphones, FileCheck2, PackageSearch, CheckCircle2, XCircle, AlertCircle, Phone, MessageCircle, X, Hand, Warehouse, Landmark, Globe } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -11,37 +11,9 @@ import GlassButton from '../Components/ui/GlassButton';
 import SectionHeading from '../Components/ui/SectionHeading';
 import MarqueeStrip from '../Components/ui/MarqueeStrip';
 import SEO from '../Components/SEO';
+import { shipmentRequest } from '../lib/shipmentApi';
+import useHeroScroll from '../lib/useHeroScroll';
 import { staggerContainer, staggerItem, fadeIn } from '../lib/motion';
-
-const homeJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'LogisticsBusiness',
-  name: 'Panchathan Logistics',
-  image: 'https://panchathanlogistics.com/Logo.png',
-  url: 'https://panchathanlogistics.com/',
-  telephone: '+91-73394-33590',
-  priceRange: '₹₹',
-  address: {
-    '@type': 'PostalAddress',
-    streetAddress: 'Plot No. 65, Annai Therasa Street, V.O.C. Nagar, Pammal',
-    addressLocality: 'Chennai',
-    addressRegion: 'Tamil Nadu',
-    postalCode: '600075',
-    addressCountry: 'IN',
-  },
-  geo: { '@type': 'GeoCoordinates', latitude: 12.9716, longitude: 80.1256 },
-  areaServed: [
-    { '@type': 'State', name: 'Tamil Nadu' },
-    { '@type': 'Country', name: 'India' },
-  ],
-  hasMap: 'https://www.google.com/maps/place/Chennai,+Tamil+Nadu',
-  sameAs: [],
-  makesOffer: [
-    { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Courier Services Chennai' } },
-    { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Cargo Services Tamil Nadu' } },
-    { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Air, Sea & Road Freight Forwarding India' } },
-  ],
-};
 
 const whyChooseUs = [
   { icon: Radar, title: 'Real-Time Tracking', desc: 'Live AWB status from pickup to delivery, no guesswork.' },
@@ -84,32 +56,48 @@ function splitText(target) {
   });
 }
 
-// Slides up + fades in once it scrolls into view.
-const CountUpStat = ({ value, label }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: false, amount: 0.6 }}
-    transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-  >
-    <p className="font-sora text-2xl md:text-3xl font-extrabold text-brand-green">{value}</p>
-    <p className="text-xs md:text-sm text-gray-500">{label}</p>
-  </motion.div>
-);
+// Count once, when each statistic first enters the viewport.
+const CountUpStat = ({ value, label }) => {
+  const ref = useRef(null);
+  const visible = useInView(ref, { once: true, amount: 0.6 });
+  const reducedMotion = useReducedMotion();
+  const match = value.match(/^([\d,.]+)(.*)$/);
+  const target = Number(match?.[1].replace(/,/g, '') || 0);
+  const suffix = match?.[2] || '';
+  const decimals = match?.[1].includes('.') ? match[1].split('.')[1].length : 0;
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!visible || reducedMotion) return;
+    const state = { count: 0 };
+    const tween = gsap.to(state, { count: target, duration: 1.5, ease: 'power2.out', onUpdate: () => setCount(state.count) });
+    return () => tween.kill();
+  }, [visible, reducedMotion, target]);
+  const display = reducedMotion ? value : count.toLocaleString('en-IN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + suffix;
+  return (
+    <motion.div ref={ref} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.6 }} transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}>
+      <p aria-label={value} className="font-sora text-2xl md:text-3xl font-extrabold text-brand-green"><span aria-hidden="true">{display}</span></p>
+      <p className="text-xs md:text-sm text-gray-500">{label}</p>
+    </motion.div>
+  );
+};
 
 const serviceShortcuts = [
-  { title: "Air Freight", icon: Plane, desc: "Global reach for time-critical cargo.", link: "/services" },
-  { title: "Custom Forms & Clearance", icon: Anchor, desc: "Downloadable compliance documents.", link: "/services" },
-  { title: "Ground Logistics", icon: Truck, desc: "LTL, FTL, and last-mile delivery.", link: "/services" },
+  { title: "Asset Management", icon: PackageSearch, desc: "Laptop, computer and IT equipment logistics.", link: "/services#asset-management" },
+  { title: "Air Freight", icon: Plane, desc: "Global reach for time-critical cargo.", link: "/services#air-freight" },
+  { title: "Custom Forms & Clearance", icon: Anchor, desc: "Downloadable compliance documents.", link: "/services#customs-forms" },
+  { title: "Ground Logistics", icon: Truck, desc: "LTL, FTL, and last-mile delivery.", link: "/services#surface-transport" },
 ];
 
 function Home() {
   const navigate = useNavigate();
   const heroHeadingRef = useRef(null);
   const heroSectionRef = useRef(null);
+  useHeroScroll(heroSectionRef);
   const serviceTitleRef = useRef(null);
   const searchBoxRef = useRef(null);
   const searchTokenRef = useRef(0);
+  const pincodeAbortRef = useRef(null);
+  useEffect(() => () => { searchTokenRef.current += 1; pincodeAbortRef.current?.abort(); }, []);
   const coreCapSectionRef = useRef(null);
   const coreCapLeftRef = useRef(null);
   const whyChooseSectionRef = useRef(null);
@@ -127,14 +115,9 @@ function Home() {
 
   const specializedServices = [
     {
-      title: "Asset Management & Tracking",
+      title: "Asset Management",
       icon: PackageSearch,
-      desc: "End-to-end visibility and lifecycle tracking for client assets location, condition, and custody, node to node.",
-    },
-    {
-      title: "IT & Technology Sector Assets",
-      icon: Package,
-      desc: "Secure, anti-static, climate controlled handling for servers, laptops, and data center equipment trusted by IT companies across India.",
+      desc: "IT asset management in Chennai for laptops, desktops, servers and business equipment, with shipment tracking and coordinated deliveries across India.",
     },
     {
       title: "Banking & Financial Institutions",
@@ -240,166 +223,27 @@ function Home() {
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, []);
-  // Load the Elfsight Google Reviews widget script once, site-wide —
-  // guard against re-adding it on route changes / re-mounts.
+  // Start third-party reviews only as their existing section approaches the viewport.
   useEffect(() => {
-    if (document.querySelector('script[src="https://elfsightcdn.com/platform.js"]')) return;
-    const script = document.createElement('script');
-    script.src = 'https://elfsightcdn.com/platform.js';
-    script.async = true;
-    document.body.appendChild(script);
+    const container = document.querySelector('.elfsight-app-93fa4f00-4cbe-433a-89d1-82d27c88dc71');
+    const load = () => {
+      if (document.querySelector('script[src="https://elfsightcdn.com/platform.js"]')) return;
+      const script = document.createElement('script');
+      script.src = 'https://elfsightcdn.com/platform.js'; script.async = true;
+      document.body.appendChild(script);
+    };
+    if (!container) return;
+    if (!window.IntersectionObserver) { load(); return; }
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) { load(); observer.disconnect(); }
+    }, { rootMargin: '600px' });
+    observer.observe(container);
+    return () => observer.disconnect();
   }, []);
 
-useEffect(() => {
-  let locked = false;
-  const BACK_ZONE = 80;
-  const GESTURE_GAP = 150; // ms of silence = new wheel gesture
-
-  const heroTop = () => {
-    const el = heroSectionRef.current;
-    return el ? el.getBoundingClientRect().top + window.scrollY : 0;
-  };
-  const heroBottom = () => {
-    const el = heroSectionRef.current;
-    return el ? el.getBoundingClientRect().bottom + window.scrollY : 0;
-  };
-
-  const goTo = (top) => {
-    locked = true;
-    window.scrollTo({ top, behavior: 'smooth' });
-    setTimeout(() => { locked = false; }, 900);
-  };
-
-  let lastWheelTime = 0;
-  let gestureStartY = 0;
-  let upHandled = false;
-
-  const handleWheel = (e) => {
-    const now = performance.now();
-    if (now - lastWheelTime > GESTURE_GAP) {
-      gestureStartY = window.scrollY; // where this gesture began
-      upHandled = false;
-    }
-    lastWheelTime = now;
-
-    // While a snap animation is running, ignore extra wheel input
-    if (locked) {
-      e.preventDefault();
-      return;
-    }
-
-    const top = heroTop();
-    const bottom = heroBottom();
-    const y = window.scrollY;
-
-    // DOWN: anywhere inside the hero -> jump to the next section
-    if (e.deltaY > 0 && y >= top - 4 && y < bottom - 4) {
-      e.preventDefault();
-      goTo(bottom);
-      return;
-    }
-
-    // UP: only if this gesture STARTED at the top edge of section 2
-    if (
-      e.deltaY < 0 &&
-      !upHandled &&
-      gestureStartY >= bottom - 4 &&
-      gestureStartY < bottom + BACK_ZONE
-    ) {
-      e.preventDefault();
-      upHandled = true;
-      goTo(top);
-    }
-  };
-
-  let touchStartY = 0;
-  let touchStartScroll = 0;
-  let touchHandled = false;
-
-  const handleTouchStart = (e) => {
-    touchStartY = e.touches[0].clientY;
-    touchStartScroll = window.scrollY;
-    touchHandled = false;
-  };
-
-  const handleTouchMove = (e) => {
-    if (locked || touchHandled) return;
-    const deltaY = touchStartY - e.touches[0].clientY;
-    const top = heroTop();
-    const bottom = heroBottom();
-
-    if (deltaY > 30 && touchStartScroll >= top - 4 && touchStartScroll < bottom - 4) {
-      touchHandled = true;
-      goTo(bottom);
-      return;
-    }
-    if (deltaY < -30 && touchStartScroll >= bottom - 4 && touchStartScroll < bottom + BACK_ZONE) {
-      touchHandled = true;
-      goTo(top);
-    }
-  };
-
-  window.addEventListener('wheel', handleWheel, { passive: false });
-  window.addEventListener('touchstart', handleTouchStart, { passive: true });
-  window.addEventListener('touchmove', handleTouchMove, { passive: true });
-  return () => {
-    window.removeEventListener('wheel', handleWheel);
-    window.removeEventListener('touchstart', handleTouchStart);
-    window.removeEventListener('touchmove', handleTouchMove);
-  };
-}, []);
-
   // AWB & Pincode Search Logic (unchanged business logic)
-  const handleAwbSearch = async (trackingAwb) => {
-    const token = ++searchTokenRef.current;
-    setLoading(true);
-    setAwbResult(null);
-
-    try {
-      const payload = [trackingAwb];
-
-      const response = await fetch(
-        "https://panchathanlogistics.com/billing_php/index.php/multi_tracking_web",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const responseData = await response.json();
-      if (searchTokenRef.current !== token) return;
-
-      if (responseData.status === "failed") {
-        setAwbResult({ error: `Tracking data not found for AWB: ${trackingAwb}. Please double-check the number.` });
-        return;
-      }
-
-      const trackingData = responseData?.data?.[0];
-
-      if (trackingData && trackingData.details && trackingData.details.length > 0) {
-        setAwbResult({ success: true, awb: trackingAwb });
-        navigate(`/tracking?awb=${encodeURIComponent(trackingAwb)}`);
-      } else {
-        setAwbResult({
-          error: "Tracking data not found or is invalid. Please check the AWB number.",
-        });
-      }
-    } catch (error) {
-      console.error("AWB fetch error:", error);
-      if (searchTokenRef.current !== token) return;
-      setAwbResult({
-        error:
-          error.message ||
-          "Failed to fetch tracking details due to network or parsing error.",
-      });
-    } finally {
-      if (searchTokenRef.current === token) setLoading(false);
-    }
+  const handleAwbSearch = (trackingAwb) => {
+    navigate(`/tracking?awb=${encodeURIComponent(trackingAwb)}`);
   };
 
   const handlePincodeCheck = async (checkPincode) => {
@@ -408,17 +252,10 @@ useEffect(() => {
     setPincodeResult(null);
 
     try {
-      const payload = { originId: -1, pincode: checkPincode };
-      const response = await fetch(
-        "https://panchathanlogistics.com/billing_php/index.php/get_delivery_location_based_pincode",
-        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}.`);
-      }
-
-      const responseData = await response.json();
+      pincodeAbortRef.current?.abort();
+      const controller = new AbortController();
+      pincodeAbortRef.current = controller;
+      const responseData = await shipmentRequest('get_delivery_location_based_pincode', { originId: -1, pincode: checkPincode }, controller.signal);
       if (searchTokenRef.current !== token) return;
 
       if (responseData.status === "failed") {
@@ -427,11 +264,11 @@ useEffect(() => {
         return;
       }
 
-      setPincodeResult(responseData?.data || []);
+      setPincodeResult(Array.isArray(responseData?.data) ? responseData.data : []);
     } catch (error) {
       console.error("Pincode fetch error:", error);
       if (searchTokenRef.current !== token) return;
-      setPincodeResult([]);
+      setAwbResult({ error: "We could not check delivery coverage. Please try again or call our team." });
     } finally {
       if (searchTokenRef.current === token) setLoading(false);
     }
@@ -460,15 +297,27 @@ useEffect(() => {
 
   const resultModalOpen = (pincodeResult !== null || (awbResult && awbResult.error)) && !loading;
 
+  useEffect(() => {
+    if (!resultModalOpen) return;
+    const previous = document.activeElement;
+    const dialog = document.querySelector('[role="dialog"][aria-label="Search result"]');
+    dialog?.focus();
+    const onKey = event => {
+      if (event.key === 'Escape') { searchTokenRef.current += 1; setLoading(false); setPincodeResult(null); setAwbResult(null); }
+      if (event.key === 'Tab' && dialog) {
+        const nodes = [...dialog.querySelectorAll('a, button, [tabindex="0"]')];
+        const first = nodes[0], last = nodes[nodes.length - 1];
+        if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialog)) { event.preventDefault(); first?.focus(); }
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('keydown', onKey); previous?.focus?.(); };
+  }, [resultModalOpen]);
+
   return (
     <>
-      <SEO
-        title="Courier & Cargo Services in Chennai, Tamil Nadu | Panchathan Logistics"
-        description="Panchathan Logistics is a trusted courier, cargo & freight forwarding company headquartered in Chennai, Tamil Nadu, serving all of India with air, sea, road freight, customs clearance (CHA) and real-time AWB tracking."
-        keywords="courier services Chennai, cargo services Chennai, logistics company Tamil Nadu, freight forwarding India, packers and movers Chennai, air cargo Chennai, customs clearance Chennai, best logistics company in India"
-        path="/"
-        jsonLd={homeJsonLd}
-      />
+      <SEO path="/" />
       {/* HERO -> TAILORED EXPERTISE */}
       <div className="relative">
         {/* HERO */}
@@ -499,6 +348,7 @@ useEffect(() => {
 
             <h1
               ref={heroHeadingRef}
+              aria-label="Elevate Your Business With Reliable Logistics"
               className="text-4xl md:text-6xl xl:text-7xl font-sora font-extrabold leading-[1.05] tracking-tight text-brand-green uppercase"
             >
               Elevate Your Business With Reliable Logistics
@@ -524,6 +374,7 @@ useEffect(() => {
                   value={awb}
                   onChange={(e) => setAwb(e.target.value)}
                   placeholder="AWB number"
+                  aria-label="AWB number" maxLength={80}
                   className="bg-transparent outline-none flex-1 min-w-0 text-base text-gray-800 placeholder-gray-500"
                 />
               </div>
@@ -538,6 +389,7 @@ useEffect(() => {
                   value={pincode}
                   onChange={(e) => setPincode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
                   placeholder="Pincode"
+                  aria-label="Delivery pincode" inputMode="numeric" pattern="[0-9]{6}"
                   maxLength={6}
                   className="bg-transparent outline-none flex-1 min-w-0 text-base text-gray-800 placeholder-gray-500"
                 />
@@ -545,7 +397,8 @@ useEffect(() => {
 
               <motion.button
                 type="submit"
-                disabled={!awb.trim() && !pincode.trim()}
+                aria-label="Search shipment or delivery area"
+                disabled={loading || (!awb.trim() && !pincode.trim())}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className={`relative shrink-0 rounded-2xl md:rounded-full transition-all duration-300 flex items-center justify-center gap-2 py-3 px-6 md:px-5 md:w-14 md:h-14 ${(!awb.trim() && !pincode.trim())
@@ -617,13 +470,13 @@ useEffect(() => {
         </section>
 
         {/* TRUST PILLARS */}
-        <section className="relative z-10 pt-52 md:pt-60  pb-16 md:pb-24 px-4 md:px-6 bg-white scroll-mt-24 md:scroll-mt-28 overflow-hidden">
+        <section className="relative z-10 section-space px-4 md:px-6 bg-white scroll-mt-24 md:scroll-mt-28 overflow-hidden">
           <div
             className="absolute inset-0 opacity-[0.1] pointer-events-none"
-            style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed', filter: 'invert(1)' }}
+            style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll', filter: 'invert(1)' }}
           />
           <div className="relative max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12  lg:gap-16 items-center w-full">
-            <motion.div initial="hidden" whileInView="show" viewport={{ once: false, amount: 0.4 }} className="order-1 flex flex-col  items-center text-center lg:items-start lg:text-left">
+            <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.4 }} className="order-1 flex flex-col  items-center text-center lg:items-start lg:text-left">
               <h2 className="font-sora text-3xl md:text-4xl xl:text-5xl font-extrabold leading-tight">
                 {[
                   { t: 'Trusted', c: 'text-gray-900' },
@@ -690,7 +543,7 @@ useEffect(() => {
               <motion.div
                 initial={{ scaleY: 0 }}
                 whileInView={{ scaleY: 1 }}
-                viewport={{ once: false, amount: 0.3 }}
+                viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
                 style={{ transformOrigin: 'top' }}
                 className="absolute left-[7px] top-3 bottom-3 w-px bg-gray-200"
@@ -724,14 +577,14 @@ useEffect(() => {
         </section>
 
         {/* TAILORED EXPERTISE */}
-        <section ref={coreCapSectionRef} className="relative z-10 py-16 md:py-20 lg:py-10 px-4 md:px-6">
+        <section ref={coreCapSectionRef} className="relative z-10 section-space lg:py-10 px-4 md:px-6">
           <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
             <div ref={coreCapLeftRef} className="lg:sticky lg:top-28 lg:self-start">
               <SectionHeading
                 align="left"
                 eyebrow="Core Capabilities"
                 title="Asset Management & Industry Expertise"
-                subtitle="From end-to-end asset tracking to the highest demands of critical industries dedicated infrastructure, built in."
+                subtitle="Chennai-based IT asset management, laptop logistics and equipment transport for technology, banking and business clients."
                 className="mb-0 max-w-none"
               />
             </div>
@@ -753,16 +606,16 @@ useEffect(() => {
       {/* end scroll-truck wrapper */}
 
       {/* WHY CHOOSE US */}
-      <section ref={whyChooseSectionRef} className="relative py-16 bg-white md:py-24 px-4 md:px-6 overflow-hidden">
+      <section ref={whyChooseSectionRef} className="relative section-space bg-white px-4 md:px-6 overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.1] pointer-events-none"
-          style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed', filter: 'invert(1)' }}
+          style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll', filter: 'invert(1)' }}
         />
         <div className="relative max-w-5xl mx-auto">
           <SectionHeading
             eyebrow="Why Panchathan"
             title="Why Choose Us for Your Shipment"
-            subtitle="A decade of moving India's cargo real infrastructure, real accountability, and real people on the line, every time."
+            subtitle="Moving India's cargo since 2019, with real infrastructure, real accountability, and real people on the line, every time."
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-10">
             {whyChooseUs.map((item, i) => (
@@ -770,7 +623,7 @@ useEffect(() => {
                 key={i}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.4 }}
+                viewport={{ once: true, amount: 0.4 }}
                 transition={{ duration: 0.5, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
               >
                 <GlassCard as="div" className="h-full p-6 text-center flex flex-col items-center">
@@ -787,20 +640,21 @@ useEffect(() => {
       </section>
 
       {/* QUICK SERVICE ACCESS */}
-      <section className="py-16 md:py-20  px-4 md:px-6">
+      <section className="section-space  px-4 md:px-6">
         <div className="max-w-6xl mx-auto">
           <SectionHeading eyebrow="Explore" title="Quick Service Access" />
 
-          <motion.div {...staggerContainer(0.15)} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div {...staggerContainer(0.15)} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {serviceShortcuts.map((service, i) => (
               <GlassCard
                 key={i}
                 as="div"
+                role="link" tabIndex={0}
+                onKeyDown={(event) => { if (event.key === "Enter") navigate(service.link); }}
                 variants={staggerItem}
                 className="p-6 md:p-8 cursor-pointer"
                 onClick={() => {
                   navigate(service.link);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
               >
                 <div className="mb-4 w-12 h-12 flex items-center justify-center rounded-2xl bg-brand-green text-white shadow-md">
@@ -827,7 +681,7 @@ useEffect(() => {
       <BranchesSection />
 
       {/* GOOGLE REVIEWS */}
-      <section className="relative z-10 py-16 md:py-20 px-4 md:px-6">
+      <section className="relative z-10 section-space px-4 md:px-6">
         <div className="max-w-4xl mx-auto">
           <SectionHeading eyebrow="Client Reviews" title="What Our Clients Say" subtitle="Real feedback from real clients, straight from Google." />
           <div className="elfsight-app-93fa4f00-4cbe-433a-89d1-82d27c88dc71" data-elfsight-app-lazy></div>
@@ -846,6 +700,7 @@ useEffect(() => {
           >
             <motion.div
               key="result-modal-card"
+              role="dialog" aria-modal="true" aria-label="Search result" tabIndex={-1}
               initial={{ opacity: 0, scale: 0.92, y: 16 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: 16 }}
@@ -859,7 +714,7 @@ useEffect(() => {
                 type="button"
                 onClick={closeResultModal}
                 aria-label="Close"
-                className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-500 flex items-center justify-center transition-colors"
+                className="absolute top-3 right-3 z-10 w-11 h-11 rounded-full bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-500 flex items-center justify-center transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>

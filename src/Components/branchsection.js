@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { motion } from 'framer-motion';
 import { fadeUp, staggerContainer, staggerItem } from '../lib/motion';
+import { Link } from 'react-router-dom';
 import GlassButton from './ui/GlassButton';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -94,13 +95,13 @@ const LocationMarker = ({ branch }) => {
       className="absolute group"
       style={{ top: `${branch.top}%`, left: `${branch.left}%`, transform: 'translate(-50%, -50%)' }}
     >
-      <div className="relative w-3.5 h-3.5 cursor-pointer">
-        <div ref={pulseRef} className="absolute inset-0 rounded-full bg-brand-amber" />
-        <div className="absolute inset-0 rounded-full bg-brand-green border-2 border-white shadow-md" />
-      </div>
+      <Link to="/contact" aria-label={`View ${branch.name} branch contact details`} className="relative block w-11 h-11 cursor-pointer">
+        <div ref={pulseRef} className="absolute inset-[15px] rounded-full bg-brand-amber" />
+        <div className="absolute inset-[15px] rounded-full bg-brand-green border-2 border-white shadow-md" />
+      </Link>
 
       <div
-        className={`absolute ${popupPosition} opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-300 z-20 w-52 md:w-60`}
+        className={`hidden md:block absolute ${popupPosition} opacity-0 pointer-events-none group-hover:opacity-100 group-focus-within:opacity-100 group-hover:pointer-events-auto transition-opacity duration-300 z-20 w-52 md:w-60`}
       >
         <div className="bg-white/85 backdrop-blur-xl border border-white/60 shadow-glass-lg rounded-2xl p-3">
           <h3 className="font-bold text-sm mb-1 text-brand-green">{branch.name}</h3>
@@ -129,13 +130,13 @@ const BranchesSection = () => {
   }, []);
 
   return (
-    <section className="relative py-20 bg-white xl:py-28 px-6 md:px-12 overflow-hidden">
+    <section className="relative section-space bg-white px-6 md:px-12 overflow-hidden">
       <div
         className="absolute inset-0 opacity-[0.1] pointer-events-none"
-        style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed', filter: 'invert(1)' }}
+        style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll', filter: 'invert(1)' }}
       />
       <div className="relative max-w-7xl mx-auto">
-        <motion.h2 {...fadeUp} className="branch-animate font-sora text-3xl md:text-5xl text-center font-extrabold text-brand-green mb-14">
+        <motion.h2 {...fadeUp} className="branch-animate font-sora text-3xl md:text-5xl text-center font-extrabold text-brand-green mb-8 md:mb-10">
           Our National Footprint
         </motion.h2>
 

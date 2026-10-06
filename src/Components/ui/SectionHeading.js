@@ -6,7 +6,7 @@ const SectionHeading = ({ eyebrow, title, subtitle, align = 'center', light = fa
   const alignClass = align === 'left' ? 'text-left items-start' : 'text-center items-center mx-auto';
 
   return (
-    <motion.div {...fadeUp} className={`flex flex-col ${alignClass} max-w-3xl mb-10 md:mb-14 ${className}`}>
+    <motion.div {...fadeUp} className={`flex flex-col ${alignClass} max-w-3xl mb-8 md:mb-10 ${className}`}>
       {eyebrow && (
         <span className={`text-xs md:text-sm font-bold uppercase tracking-[0.2em] mb-3 ${light ? 'text-brand-amber' : 'text-brand-amberDark'}`}>
           {eyebrow}

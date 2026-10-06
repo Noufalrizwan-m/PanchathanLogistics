@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ArrowRight } from 'lucide-react';
@@ -15,6 +15,25 @@ const navLinks = [
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const menuButton = useRef(null);
+  const menuPanel = useRef(null);
+  useEffect(() => { setIsOpen(false); }, [location.pathname]);
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = event => {
+      if (event.key === 'Escape') { setIsOpen(false); menuButton.current?.focus(); }
+      if (event.key === 'Tab') {
+        const nodes = [menuButton.current, ...menuPanel.current.querySelectorAll('a')].filter(Boolean);
+        const first = nodes[0], last = nodes[nodes.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+    };
+    const onResize = () => { if (window.innerWidth >= 1024) setIsOpen(false); };
+    document.addEventListener('keydown', onKey);
+    window.addEventListener('resize', onResize);
+    return () => { document.removeEventListener('keydown', onKey); window.removeEventListener('resize', onResize); };
+  }, [isOpen]);
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : 'unset';
@@ -24,7 +43,7 @@ const Header = () => {
   }, [isOpen]);
 
   const handleNavClick = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'instant' });
     setIsOpen(false);
   };
 
@@ -42,7 +61,7 @@ const Header = () => {
           <div className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent rounded-t-full" />
           <Link to="/" onClick={handleNavClick} className="flex items-center h-full shrink-0">
             <img
-              src="/Logo.png"
+              src="/logo-480.webp" width="480" height="124"
               className="h-10 md:h-12 w-auto object-contain"
               alt="Panchathan Logistics"
             />
@@ -54,6 +73,7 @@ const Header = () => {
               return (
                 <Link
                   key={link.name}
+                  aria-current={active ? "page" : undefined}
                   to={link.path}
                   onClick={handleNavClick}
                   className={`relative px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-300 ${active ? 'text-white' : 'text-gray-700 hover:text-brand-green'}`}
@@ -79,9 +99,9 @@ const Header = () => {
             </div>
 
             <button
-              className="lg:hidden p-2 rounded-full bg-white/60 backdrop-blur-md border border-white/50 text-brand-green"
+              className="lg:hidden min-w-11 min-h-11 flex items-center justify-center p-2 rounded-full bg-white/60 backdrop-blur-md border border-white/50 text-brand-green"
               onClick={() => setIsOpen((v) => !v)}
-              aria-label="Toggle menu"
+              ref={menuButton} aria-label={isOpen ? "Close menu" : "Open menu"} aria-expanded={isOpen} aria-controls="mobile-navigation"
             >
               {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -96,6 +116,7 @@ const Header = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
+            id="mobile-navigation" ref={menuPanel} role="navigation" aria-label="Mobile navigation"
             className="lg:hidden fixed inset-0 z-40 bg-brand-green flex flex-col items-center justify-center gap-2"
           >
             {navLinks.map((link, i) => (
