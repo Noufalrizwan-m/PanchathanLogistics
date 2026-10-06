@@ -2,6 +2,7 @@
   "name": "panchathanlogistics",
   "version": "0.1.0",
   "private": true,
+  "proxy": "https://panchathan-logistics.vercel.app",
   "dependencies": {
     "@fontsource/oregano": "^5.2.6",
     "@studio-freight/lenis": "^1.0.42",
