@@ -1,0 +1,26 @@
+const customForms = [
+  { name: "ANNEXURE C1 FOR EOU", file: "Annexure-C1-for-EOU.xls" },
+  { name: "ANNEXURE D FOR DEPB", file: "Annexure-D-for-DEPB.xls" },
+  { name: "ANNEXURE I FOR DRAWBACK", file: "Annexure-I-for-Drawback.xls" },
+  { name: "ANNEXURE II FOR DRAWBACK", file: "Annexure-II-for-Drawback.xls" },
+  { name: "APPENDIX II FOR DEEC", file: "Appendix-II-for-DEEC.xls" },
+  { name: "APPENDIX III FOR DRAWBACK", file: "Appendix-III-for-Drawback.xls" },
+  { name: "APPENDIX IV FOR DRAWBACK", file: "Appendix-IV-for-Drawback.xls" },
+  { name: "AUTHORISATION LETTER", file: "Authorisation-Letter.docx" },
+  { name: "COMMERCIAL INVOICE", file: "Commercial-Invoice.xls" },
+  { name: "GR WAIVER FORM (FOR FREE TRADE SAMPLE)", file: "GR-Waiver-Form-(for-Free-Trade-Sample).xls" },
+  { name: "GR WAIVER FORM (FOR REPAIR & RETURN)", file: "GR-Waiver-Form-(for-Repair-&-Return).xls" },
+  { name: "KYC FORMAT", file: "KYC-FORMAT.xls" },
+  { name: "MSDS", file: "MSDS.xls" },
+  { name: "MULTIPLE COUNTRY DECLARATION", file: "Multiple-Country-Declaration.xls" },
+  { name: "NEGATIVE DECLARATION", file: "Negative-Declaration.xls" },
+  { name: "NON DG DECLARATION", file: "Non-DG-Declaration.xls" },
+  { name: "PACKING LIST", file: "Packing-List.xls" },
+  { name: "QUOTA CHARGE STATEMENT", file: "Quota-Charge-Statement.xls" },
+  { name: "SDF FORM", file: "SDF-Form.xls" },
+  { name: "SHIPPERS LETTER OF INSTRUCTIONS", file: "Shippers-Letter-of-Instructions.xls" },
+  { name: "SINGLE COUNTRY DECLARATION", file: "Single-Country-Declaration.xls" },
+  { name: "TSCA CERTIFICATE", file: "TSCA-Certificate.xls" },
+];
+
+export default customForms;

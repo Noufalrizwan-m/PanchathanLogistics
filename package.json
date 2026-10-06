@@ -12,7 +12,9 @@
     "axios": "^1.19.0",
     "framer-motion": "^12.23.22",
     "gsap": "^3.13.0",
+    "libphonenumber-js": "^1.13.14",
     "lucide-react": "^0.522.0",
+    "nodemailer": "^10.0.15",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-helmet-async": "^3.0.0",
@@ -22,9 +24,11 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build && node scripts/generate-seo-html.js",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "start:api": "node --env-file-if-exists=.env.local server/index.js",
+    "test:api": "node --test server/inquiry.test.js"
   },
   "eslintConfig": {
     "extends": [

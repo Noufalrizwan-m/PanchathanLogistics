@@ -40,7 +40,7 @@ const JourneyTrack = ({ index, total }) => {
         <motion.div
           initial={{ width: '0%' }}
           whileInView={{ width: `${progress}%` }}
-          viewport={{ once: false, amount: 0.6 }}
+          viewport={{ once: true, amount: 0.6 }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           className="h-full bg-brand-green rounded-full"
         />
@@ -48,7 +48,7 @@ const JourneyTrack = ({ index, total }) => {
       <motion.div
         initial={{ left: '0%', opacity: 0 }}
         whileInView={{ left: `${progress}%`, opacity: 1 }}
-        viewport={{ once: false, amount: 0.6 }}
+        viewport={{ once: true, amount: 0.6 }}
         transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
         className="absolute -top-2.5"
         style={{ transform: 'translateX(-50%)' }}
@@ -62,7 +62,7 @@ const JourneyTrack = ({ index, total }) => {
 const defaultSteps = [
   {
     title: 'Booked & Verified',
-    desc: 'Every shipment is confirmed and logged by our team the moment it is booked — no surprises down the line.',
+    desc: 'Every shipment is confirmed and logged by our team the moment it is booked, with no surprises down the line.',
     icon: ClipboardCheck,
   },
   {
@@ -77,7 +77,7 @@ const defaultSteps = [
   },
   {
     title: 'Delivered & Signed',
-    desc: 'Handed over at the doorstep with proof of delivery — the same accountability from pickup to last mile.',
+    desc: 'Handed over at the doorstep with proof of delivery, with the same accountability from pickup to last mile.',
     icon: PackageCheck,
   },
 ];
@@ -86,7 +86,7 @@ const DeliveryProcess = ({
   steps = defaultSteps,
   eyebrow = 'Our Process',
   title = 'Your Shipment, Every Step of the Way',
-  subtitle = 'From booking to doorstep — the people and process behind every delivery.',
+  subtitle = 'From booking to doorstep, the people and process behind every delivery.',
 }) => {
   return (
     <section className="relative py-12 md:py-16">
@@ -97,17 +97,17 @@ const DeliveryProcess = ({
       {steps.map((step, i) => (
         <div
           key={i}
-          className="sticky top-20 md:top-24 h-[420px] md:h-[480px] flex items-center justify-center px-4 md:px-6"
+          className="relative md:sticky md:top-24 min-h-[420px] md:h-[480px] mb-6 md:mb-0 flex items-center justify-center px-4 md:px-6"
           style={{ zIndex: i + 1 }}
         >
           <motion.div
             initial={{ opacity: 0, y: 60 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full h-full max-w-5xl bg-white border border-gray-100 rounded-3xl shadow-glass-lg overflow-hidden grid grid-cols-1 md:grid-cols-2"
+            className="w-full md:h-full max-w-5xl bg-white border border-gray-100 rounded-3xl shadow-glass-lg overflow-hidden grid grid-cols-1 md:grid-cols-2"
           >
-            <div className="w-full aspect-square md:aspect-auto md:h-full">
+            <div className="w-full h-44 md:h-full">
               <StepBadge Icon={step.icon} />
             </div>
             <div className="p-8 md:p-12 flex flex-col justify-center">
@@ -120,8 +120,8 @@ const DeliveryProcess = ({
               <p className="text-gray-600 text-base leading-relaxed">{step.desc}</p>
 
               <JourneyTrack index={i} total={steps.length} />
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
-                Journey Progress — {String(i + 1).padStart(2, '0')}/{String(steps.length).padStart(2, '0')}
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+                Journey Progress: {String(i + 1).padStart(2, '0')}/{String(steps.length).padStart(2, '0')}
               </p>
             </div>
           </motion.div>

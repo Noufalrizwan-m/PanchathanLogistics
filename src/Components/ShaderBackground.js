@@ -66,14 +66,15 @@ const ShaderBackground = ({ className = '' }) => {
     }
 
     let resizeObserver;
+    let resizeFrame;
     if (typeof ResizeObserver !== 'undefined') {
-      resizeObserver = new ResizeObserver(syncSize);
+      resizeObserver = new ResizeObserver(() => { cancelAnimationFrame(resizeFrame); resizeFrame = requestAnimationFrame(syncSize); });
       resizeObserver.observe(canvas);
     }
     syncSize();
 
     const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    if (!gl) return;
+    if (!gl) return () => { resizeObserver?.disconnect(); cancelAnimationFrame(resizeFrame); };
 
     const program = gl.createProgram();
     gl.attachShader(program, compileShader(gl, gl.VERTEX_SHADER, VERTEX_SHADER));
@@ -118,6 +119,7 @@ const ShaderBackground = ({ className = '' }) => {
 
     return () => {
       cancelAnimationFrame(rafId);
+      cancelAnimationFrame(resizeFrame);
       window.removeEventListener('mousemove', handleMouseMove);
       if (resizeObserver) resizeObserver.disconnect();
     };

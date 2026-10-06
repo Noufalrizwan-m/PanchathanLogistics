@@ -3,44 +3,39 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    color-scheme: light;
-    scroll-behavior: smooth;
-  }
-  body {
-    @apply font-titillium text-gray-800 bg-white;
-  }
-  h1, h2, h3, h4 {
-    @apply font-sora;
-  }
+  html { color-scheme: light; scroll-padding-top: 112px; }
+  body { @apply font-titillium text-gray-800; background: white; }
+  h1, h2, h3, h4 { @apply font-sora; }
+  a, button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 3px solid #175d29; outline-offset: 4px; }
+  input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offset: 2px; }
+  main { outline: none; }
+  img { max-width: 100%; }
+}
+@layer components {
+  .page-container { @apply w-full max-w-6xl mx-auto px-6; }
+  .section-space { @apply py-12 md:py-16; }
+  .eyebrow { @apply text-sm font-bold uppercase tracking-widest text-brand-green; }
+  .form-input { @apply w-full min-h-12 rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-gray-900 placeholder:text-gray-500; }
+}
+.skip-link { position: fixed; top: 8px; left: 16px; z-index: 100; padding: 12px 20px; border-radius: 12px; background: #175d29; color: white; transform: translateY(-150%); }
+.skip-link:focus { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  main [style*="opacity"], footer [style*="opacity"] { opacity: 1 !important; }
 }
 
-/* Custom cursor: only hide the native cursor when the follower is active
-   (desktop, fine pointer) — never on touch devices. */
-.cursor-none-active,
-.cursor-none-active * {
-  cursor: none !important;
-}
+/* Original glass design: cursor and client marquee. */
+.cursor-none-active, .cursor-none-active * { cursor: none !important; }
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .cursor-none-active, .cursor-none-active * { cursor: auto !important; } }
 
-/* Infinite marquee: track is rendered twice back-to-back, translating by
-   exactly -50% loops seamlessly with no visible seam/jump. */
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-
-/* Section-wise scroll snap, site-wide. scroll-padding-top clears the
-   fixed floating pill nav so a snapped section isn't hidden under it. */
-html {
-  scroll-snap-type: y mandatory;
-  scroll-padding-top: 96px;
-}
-/* Opted out of by pages that pin sections with GSAP ScrollTrigger (e.g.
-   Home) — mandatory scroll-snap fights a pinned element's scroll tracking. */
-html.no-snap {
-  scroll-snap-type: none;
-}
-.snap-section {
-  scroll-snap-align: start;
-  scroll-snap-stop: normal;
+/* Seamless warning strip; pause while reading with a pointer or keyboard. */
+.beware-track { animation: marquee 28s linear infinite; }
+.beware-notice:hover .beware-track, .beware-notice:focus-within .beware-track { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .beware-notice { border-radius: 1rem; }
+  .beware-track { animation: none; width: auto; }
+  .beware-track > span { white-space: normal; padding: 0 1rem; }
+  .beware-track > span + span { display: none; }
 }

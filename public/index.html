@@ -5,16 +5,15 @@
     <link rel="icon" href="%PUBLIC_URL%/favlogo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#175d29" />
-    <meta name="robots" content="index, follow" />
-    <meta name="googlebot" content="index, follow" />
+    <meta data-static-seo="true" name="robots" content="index, follow" />
+    <meta data-static-seo="true" name="googlebot" content="index, follow" />
 
-    <!--
-      Note: meta description, keywords, and canonical are set per-page by the
-      <SEO> component (react-helmet-async) for the 5 in-app routes. Google's
-      renderer executes JS and will pick those up; only the tags below stay
-      static because social-preview crawlers (Facebook, WhatsApp, Slack, etc.)
-      don't execute JS and only ever see this raw HTML.
-    -->
+    <!-- Production builds generate unique metadata for each route. React replaces
+         these marked fallback tags after mounting, preserving one set of metadata. -->
+    <meta data-static-seo="true" name="description" content="IT asset management and laptop logistics in Chennai. Panchathan Logistics handles laptops, desktops, servers, courier and cargo shipments across India." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
     <meta name="author" content="Panchathan Logistics" />
 
     <!-- Geo targeting: Chennai, Tamil Nadu, India -->
@@ -24,19 +23,19 @@
     <meta name="ICBM" content="12.9716, 80.1256" />
 
     <!-- Open Graph (static fallback for non-JS social crawlers) -->
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Panchathan Logistics" />
-    <meta property="og:title" content="Panchathan Logistics — Courier & Cargo Services in Chennai, Tamil Nadu" />
-    <meta property="og:description" content="One stop for all your courier and cargo needs — serving Chennai, Tamil Nadu and pan-India with air, sea and road freight." />
-    <meta property="og:url" content="https://panchathanlogistics.com/" />
-    <meta property="og:image" content="https://panchathanlogistics.com/Logo.png" />
-    <meta property="og:locale" content="en_IN" />
+    <meta data-static-seo="true" property="og:type" content="website" />
+    <meta data-static-seo="true" property="og:site_name" content="Panchathan Logistics" />
+    <meta data-static-seo="true" property="og:title" content="IT Asset Management & Logistics Chennai | Panchathan Logistics" />
+    <meta data-static-seo="true" property="og:description" content="IT asset management and laptop logistics in Chennai. Panchathan Logistics handles laptops, desktops, servers, courier and cargo shipments across India." />
+    <meta data-static-seo="true" property="og:url" content="https://panchathanlogistics.com/" />
+    <meta data-static-seo="true" property="og:image" content="https://panchathanlogistics.com/logo-480.webp" />
+    <meta data-static-seo="true" property="og:locale" content="en_IN" />
 
     <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Panchathan Logistics — Courier & Cargo Services in Chennai, Tamil Nadu" />
-    <meta name="twitter:description" content="One stop for all your courier and cargo needs — serving Chennai, Tamil Nadu and pan-India." />
-    <meta name="twitter:image" content="https://panchathanlogistics.com/Logo.png" />
+    <meta data-static-seo="true" name="twitter:card" content="summary" />
+    <meta data-static-seo="true" name="twitter:title" content="IT Asset Management & Logistics Chennai | Panchathan Logistics" />
+    <meta data-static-seo="true" name="twitter:description" content="IT asset management, laptop logistics and cargo transport from Chennai across India." />
+    <meta data-static-seo="true" name="twitter:image" content="https://panchathanlogistics.com/logo-480.webp" />
 
     <!--
       manifest.json provides metadata used when your web app is installed on a
@@ -55,44 +54,13 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>Panchathan Logistics — Courier & Cargo Services in Chennai, Tamil Nadu</title>
+    <title data-static-seo="true">IT Asset Management & Logistics Chennai | Panchathan Logistics</title>
 
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "LogisticsBusiness",
-        "name": "Panchathan Logistics",
-        "image": "https://panchathanlogistics.com/Logo.png",
-        "url": "https://panchathanlogistics.com/",
-        "telephone": "+91-73394-33590",
-        "priceRange": "₹₹",
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": "Plot No. 65, Annai Therasa Street, V.O.C. Nagar, Pammal",
-          "addressLocality": "Chennai",
-          "addressRegion": "Tamil Nadu",
-          "postalCode": "600075",
-          "addressCountry": "IN"
-        },
-        "geo": { "@type": "GeoCoordinates", "latitude": 12.9716, "longitude": 80.1256 },
-        "areaServed": [
-          { "@type": "City", "name": "Chennai" },
-          { "@type": "State", "name": "Tamil Nadu" },
-          { "@type": "Country", "name": "India" }
-        ],
-        "department": [
-          { "@type": "LogisticsBusiness", "name": "Panchathan Logistics Kochi", "address": "New/63/3289, MBA Residency, Brother Mayooras Road, Kochi - 682016" },
-          { "@type": "LogisticsBusiness", "name": "Panchathan Logistics Bangalore", "address": "No.29, 6th Main, 10th Cross, Sampangi Ram Nagar, Bangalore - 560027" },
-          { "@type": "LogisticsBusiness", "name": "Panchathan Logistics Hyderabad", "address": "1-8-506/B/1, Prakash Nagar, Begumpet, Hyderabad - 500016" },
-          { "@type": "LogisticsBusiness", "name": "Panchathan Logistics Mumbai", "address": "Shop 03A/1B, Shanti Nagar, Opp. Marol MIDC Bus Depot, Andheri East, Mumbai - 400093" },
-          { "@type": "LogisticsBusiness", "name": "Panchathan Logistics Kolkata", "address": "#193A/17 Picnic Garden Road, Kolkata - 700039" },
-          { "@type": "LogisticsBusiness", "name": "Panchathan Logistics Delhi", "address": "Plot No. A-50, Near Grand Shoba Hotel, Road No. 6, Mahipalpur, New Delhi - 110037" }
-        ]
-      }
-    </script>
+
+
   </head>
   <body>
-    <noscript>Panchathan Logistics — One Stop For All Your Courier and Cargo Needs across Chennai, Tamil Nadu and India.</noscript>
+    <noscript>Panchathan Logistics provides IT asset management, laptop and computer logistics, courier and cargo services from Pammal, Chennai across India.</noscript>
     <div id="root"></div>
     <!--
       This HTML file is a template.

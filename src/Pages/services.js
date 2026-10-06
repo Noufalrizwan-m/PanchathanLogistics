@@ -3,38 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import DeliveryProcess from '../Components/DeliveryProcess';
 import { motion } from 'framer-motion';
 import {
-  Plane, Ship, Truck, Factory, Shield, BarChart2, PackageSearch,
+  Plane, Truck, Factory, Shield, BarChart2, PackageSearch,
   Search, X, FileText, FileSpreadsheet, Download, ArrowRight, ArrowDown, FolderSearch,
   ClipboardList, FileCheck2, PackageCheck, CheckCircle2, User, ShieldCheck,
 } from 'lucide-react';
 import { staggerContainer, staggerItem } from '../lib/motion';
 import SEO from '../Components/SEO';
+import customForms from '../lib/customForms.mjs';
 
 // Filenames verified against public/doc/
-const customForms = [
-  { name: "ANNEXURE C1 FOR EOU", file: "Annexure-C1-for-EOU.xls" },
-  { name: "ANNEXURE D FOR DEPB", file: "Annexure-D-for-DEPB.xls" },
-  { name: "ANNEXURE I FOR DRAWBACK", file: "Annexure-I-for-Drawback.xls" },
-  { name: "ANNEXURE II FOR DRAWBACK", file: "Annexure-II-for-Drawback.xls" },
-  { name: "APPENDIX II FOR DEEC", file: "Appendix-II-for-DEEC.xls" },
-  { name: "APPENDIX III FOR DRAWBACK", file: "Appendix-III-for-Drawback.xls" },
-  { name: "APPENDIX IV FOR DRAWBACK", file: "Appendix-IV-for-Drawback.xls" },
-  { name: "AUTHORISATION LETTER", file: "Authorisation-Letter.docx" },
-  { name: "COMMERCIAL INVOICE", file: "Commercial-Invoice.xls" },
-  { name: "GR WAIVER FORM (FOR FREE TRADE SAMPLE)", file: "GR-Waiver-Form-(for-Free-Trade-Sample).xls" },
-  { name: "GR WAIVER FORM (FOR REPAIR & RETURN)", file: "GR-Waiver-Form-(for-Repair-&-Return).xls" },
-  { name: "KYC FORMAT", file: "KYC-FORMAT.xls" },
-  { name: "MSDS", file: "MSDS.xls" },
-  { name: "MULTIPLE COUNTRY DECLARATION", file: "Multiple-Country-Declaration.xls" },
-  { name: "NEGATIVE DECLARATION", file: "Negative-Declaration.xls" },
-  { name: "NON DG DECLARATION", file: "Non-DG-Declaration.xls" },
-  { name: "PACKING LIST", file: "Packing-List.xls" },
-  { name: "QUOTA CHARGE STATEMENT", file: "Quota-Charge-Statement.xls" },
-  { name: "SDF FORM", file: "SDF-Form.xls" },
-  { name: "SHIPPERS LETTER OF INSTRUCTIONS", file: "Shippers-Letter-of-Instructions.xls" },
-  { name: "SINGLE COUNTRY DECLARATION", file: "Single-Country-Declaration.xls" },
-  { name: "TSCA CERTIFICATE", file: "TSCA-Certificate.xls" },
-];
+
 
 const getFormMeta = (file) => {
   const ext = file.split('.').pop().toLowerCase();
@@ -45,10 +23,10 @@ const getFormMeta = (file) => {
 };
 
 const processSteps = [
-  { icon: ClipboardList, title: "Request a Quote", desc: "Tell us what you're shipping — we scope the right mode, route, and cost." },
+  { icon: ClipboardList, title: "Request a Quote", desc: "Tell us what you're shipping, we scope the right mode, route, and cost." },
   { icon: FileCheck2, title: "Documentation", desc: "We prepare and verify customs paperwork before anything moves." },
   { icon: PackageCheck, title: "Pickup & Handling", desc: "Cargo is collected, scanned, and staged at the nearest branch." },
-  { icon: Truck, title: "In Transit", desc: "Live tracking across air, sea, rail, or road — every leg logged." },
+  { icon: Truck, title: "In Transit", desc: "Shipment tracking across air and road, with every leg logged." },
   { icon: CheckCircle2, title: "Delivered & Signed", desc: "Proof of delivery at the doorstep, accountability to the last mile." },
 ];
 
@@ -56,52 +34,51 @@ const processSteps = [
 // "standard" spans 4/12 (three across), "featured" spans the full 12 cols.
 const bentoServices = [
   {
+    id: 'asset-management',
     size: 'large',
+    icon: PackageSearch,
+    name: "Asset Management & Tracking",
+    desc: "IT asset management and logistics in Chennai for laptops, desktops, servers and office equipment, with shipment tracking and coordinated business deliveries.",
+    bullets: ["Condition & custody monitoring", "Laptop, computer & IT equipment logistics"],
+  },
+  {
+    size: 'standard',
     icon: Plane,
+    id: "air-freight",
     name: "Air Freight Forwarding",
-    desc: "Express, priority, and consolidated air cargo to India's major trade lanes — managed end-to-end for speed and schedule integrity.",
-    bullets: ["IATA-certified handling", "Charter & consolidation services"],
+    desc: "Express, priority, and consolidated air cargo to India's major trade lanes managed end-to-end for speed and schedule integrity.",
+    bullets: ["Priority and consolidated cargo", "Charter & consolidation services"],
   },
   {
     size: 'tall',
     icon: Shield,
+    id: "customs-clearance",
     name: "Customs & Compliance",
-    desc: "In-house clearance covering documentation, duty calculation, and GST/EXIM compliance — full control, no outsourcing.",
-    bullets: ["Import/export documentation", "AEO accreditation status"],
+    desc: "In-house clearance covering documentation, duty calculation, and GST/EXIM compliance, with coordinated support.",
+    bullets: ["Import/export documentation", "Clearance coordination"],
     formsLink: true,
   },
   {
     size: 'standard',
-    icon: Ship,
-    name: "Ocean Freight Solutions",
-    desc: "FCL, LCL, and break-bulk cargo movements, with structured carrier selection and routing for cost and reliability.",
-    bullets: ["Full Container Load (FCL)", "Multi-modal transport"],
-  },
-  {
-    size: 'standard',
     icon: Factory,
+    id: "warehousing",
     name: "Warehousing & Supply Chain",
-    desc: "Scalable storage, pick-and-pack, and distribution — fully integrated with freight and transport operations.",
+    desc: "Scalable storage, pick-and-pack, and distribution fully integrated with freight and transport operations.",
     bullets: ["Multi-user & dedicated warehousing", "Last-mile optimization"],
   },
+  
   {
     size: 'standard',
-    icon: PackageSearch,
-    name: "Asset Management & Tracking",
-    desc: "Full lifecycle tracking for client assets — trusted by IT companies and banks for secure, audit-ready handling.",
-    bullets: ["Condition & custody monitoring", "IT & banking sector programs"],
-  },
-  {
-    size: 'featured',
     icon: Truck,
-    name: "Surface Transport & ODC",
+    id: "surface-transport",
+    name: "Surface Transport",
     desc: "Local, metro, and interstate transport managed for consistent service levels and full delivery visibility across every state in India.",
   },
 ];
 
 const pillars = [
   { icon: User, title: "One Point of Contact", desc: "No more chasing multiple vendors. One team manages your entire shipment from origin to destination." },
-  { icon: BarChart2, title: "Total Visibility", desc: "Real-time IoT tracking and ERP/WMS integration mean you see exactly where your cargo is, always." },
+  { icon: BarChart2, title: "Total Visibility", desc: "Shipment updates and coordinated documentation help you follow your cargo’s progress." },
   { icon: ShieldCheck, title: "Compliance Excellence", desc: "In-house customs and audit-ready programs keep IT, banking, and export shipments moving within every regulatory requirement." },
 ];
 
@@ -117,7 +94,7 @@ const Services = () => {
 
   const scrollToForms = () => {
     const el = document.getElementById('customs-forms');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (el) el.scrollIntoView({ behavior: 'auto', block: 'start' });
   };
 
   // Mandatory scroll-snap fights a page this long — it traps scroll
@@ -130,17 +107,12 @@ const Services = () => {
 
   return (
     <div>
-      <SEO
-        title="Logistics Services — Air, Sea & Road Freight, Customs Clearance | Chennai"
-        description="Explore Panchathan Logistics' full range of services from our Chennai HQ: air freight, sea cargo, road transport, customs house agent (CHA) clearance, warehousing and documentation support across Tamil Nadu and India."
-        keywords="freight services Chennai, air freight Tamil Nadu, sea cargo India, customs house agent Chennai, CHA services, warehousing Chennai, road transport India, export import documentation Chennai"
-        path="/services"
-      />
+      <SEO path="/services" />
       {/* HERO */}
-      <section className="relative bg-brand-green text-white pt-32 md:pt-40 pb-16 md:pb-20 overflow-hidden">
+      <section className="relative bg-brand-green text-white py-12 md:py-20 overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.08] pointer-events-none"
-          style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed' }}
+          style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll' }}
         />
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -155,8 +127,8 @@ const Services = () => {
             Our Logistics Capabilities
           </h1>
           <p className="text-white/75 text-base md:text-lg max-w-2xl mb-8">
-            Full-cycle supply chain solutions across every mode — from asset tracking to customs
-            clearance, we bring decades of expertise across every freight discipline.
+            Full cycle supply chain solutions across every mode from asset tracking to customs
+            clearance, we bring experience across every freight discipline.
           </p>
           <div className="flex flex-wrap gap-3">
             <a
@@ -177,20 +149,20 @@ const Services = () => {
       </section>
 
       {/* CAPABILITIES BENTO GRID */}
-      <section id="capabilities" className="py-16 md:py-24 px-6 md:px-12 max-w-7xl mx-auto scroll-mt-24">
+      <section id="capabilities" className="section-space px-6 md:px-12 max-w-7xl mx-auto scroll-mt-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.4 }}
+          viewport={{ once: true, amount: 0.4 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="max-w-3xl mb-12 md:mb-16"
+          className="max-w-3xl mb-8 md:mb-10"
         >
-          <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-gray-400 mb-2">Our Expertise</p>
+          <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-gray-500 mb-2">Our Expertise</p>
           <h2 className="text-2xl md:text-4xl font-sora font-bold text-brand-green mb-3">
             Everything your freight needs. Under one group.
           </h2>
           <p className="text-gray-600 text-base md:text-lg">
-            From air to sea, from customs clearance to final delivery, we bring decades of expertise
+            From air freight and road transport to customs clearance and final delivery, we bring experience
             across every freight discipline.
           </p>
         </motion.div>
@@ -208,11 +180,11 @@ const Services = () => {
                       fixed — a transform on an animated ancestor breaks that. */}
                   <div
                     className="absolute inset-0 opacity-[0.08] pointer-events-none"
-                    style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed' }}
+                    style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll' }}
                   />
                   <motion.div variants={staggerItem} className="relative md:max-w-2xl">
                     <service.icon className="w-9 h-9 text-brand-amber mb-3" />
-                    <h4 className="text-xl font-sora font-bold text-white mb-2">{service.name}</h4>
+                    <h3 className="text-xl font-sora font-bold text-white mb-2">{service.name}</h3>
                     <p className="text-white/75 text-sm md:text-base leading-relaxed">{service.desc}</p>
                   </motion.div>
                 </div>
@@ -225,8 +197,9 @@ const Services = () => {
             return (
               <motion.div
                 key={i}
+                id={service.id}
                 variants={staggerItem}
-                className={`relative overflow-hidden border border-gray-200 rounded-lg p-8 flex flex-col justify-between hover:border-brand-green transition-colors ${
+                className={`relative scroll-mt-28 overflow-hidden border border-gray-200 rounded-lg p-6 md:p-8 flex flex-col justify-between hover:border-brand-green transition-colors ${
                   isLarge ? 'md:col-span-8 bg-white' : isTall ? 'md:col-span-4 bg-gray-50' : 'md:col-span-4 bg-white'
                 }`}
               >
@@ -235,8 +208,8 @@ const Services = () => {
                 )}
                 <div className="relative">
                   <service.icon className="w-8 h-8 text-brand-green mb-4" />
-                  <h4 className="text-lg md:text-xl font-sora font-bold text-gray-900 mb-2">{service.name}</h4>
-                  <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-4">{service.desc}</p>
+                  <h3 className="text-lg md:text-xl font-sora font-bold text-gray-900 mb-2">{service.name}</h3>
+                  <p className="text-base text-gray-600 leading-relaxed mb-4">{service.desc}</p>
                   {service.bullets && (
                     <ul className="space-y-1.5 mb-2">
                       {service.bullets.map((b) => (
@@ -265,15 +238,15 @@ const Services = () => {
       </section>
 
       {/* WHY PARTNER WITH US */}
-      <section className="py-16 md:py-24 px-6 md:px-12 max-w-7xl mx-auto border-t border-gray-200">
+      <section className="section-space px-6 md:px-12 max-w-7xl mx-auto border-t border-gray-200">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.4 }}
+          viewport={{ once: true, amount: 0.4 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center mb-12 md:mb-16"
+          className="text-center mb-8 md:mb-10"
         >
-          <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-gray-400 mb-2">Why Partner With Us</p>
+          <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-gray-500 mb-2">Why Partner With Us</p>
           <h2 className="text-2xl md:text-4xl font-sora font-bold text-brand-green">Logistics that works as hard as you do.</h2>
         </motion.div>
         <motion.div {...staggerContainer(0.12)} className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -282,21 +255,21 @@ const Services = () => {
               <div className="w-12 h-12 bg-gray-50 rounded-md flex items-center justify-center mb-4 text-brand-green">
                 <p.icon className="w-6 h-6" />
               </div>
-              <h4 className="text-lg font-sora font-bold text-gray-900 mb-2">{p.title}</h4>
-              <p className="text-sm md:text-base text-gray-600 leading-relaxed">{p.desc}</p>
+              <h3 className="text-lg font-sora font-bold text-gray-900 mb-2">{p.title}</h3>
+              <p className="text-base text-gray-600 leading-relaxed">{p.desc}</p>
             </motion.div>
           ))}
         </motion.div>
       </section>
 
-      <section id="customs-forms" className="py-16 md:py-24 px-6 md:px-12 max-w-7xl mx-auto scroll-mt-24 border-t border-gray-200">
-        <div className="bg-white border border-gray-200 rounded-lg p-6 md:p-12">
+      <section id="customs-forms" className="section-space px-6 md:px-12 max-w-7xl mx-auto scroll-mt-24 border-t border-gray-200">
+        <div className="bg-white border border-gray-200 rounded-lg p-6 md:p-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.4 }}
+            viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10"
+            className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-10"
           >
             <div>
               <span className="inline-flex items-center gap-2 text-xs md:text-sm font-bold uppercase tracking-[0.2em] text-brand-amberDark mb-3">
@@ -304,21 +277,22 @@ const Services = () => {
                 Clearance Assistance
               </span>
               <h2 className="font-sora font-extrabold text-3xl md:text-4xl text-brand-green leading-tight">
-                Customs Documentation Library
+                Download Customs Forms
               </h2>
               <p className="mt-3 text-base text-gray-600 max-w-2xl">
-                End-to-end Customs House Agent (CHA) services — documentation, real-time tracking, and duty
-                assessment support, so you can focus on your business.
+                Download customs and export documentation templates, including commercial invoice, packing list, KYC, authorisation letter and shipping declaration forms. Contact our Chennai team to confirm which forms apply and the current requirements before use.
               </p>
             </div>
 
-            <div className="relative w-full md:w-80 flex-shrink-0">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <div className="relative w-full lg:w-72 flex-shrink-0">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search forms — e.g. Drawback, KYC..."
+                id="forms-search"
+                aria-label="Search customs forms"
+                placeholder="Search forms, e.g. KYC"
                 className="w-full pl-11 pr-10 py-3 rounded border border-gray-300 bg-white text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition-colors"
               />
               {search && (
@@ -326,7 +300,7 @@ const Services = () => {
                   type="button"
                   onClick={() => setSearch('')}
                   aria-label="Clear search"
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -334,7 +308,7 @@ const Services = () => {
             </div>
           </motion.div>
 
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-4">
+          <p aria-live="polite" className="text-sm font-semibold text-gray-600 mb-4">
             {filteredForms.length} of {customForms.length} forms
           </p>
 
@@ -347,8 +321,7 @@ const Services = () => {
                     key={form.file}
                     variants={staggerItem}
                     href={`/doc/${form.file}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    download
                     whileHover={{ y: -3 }}
                     transition={{ type: "spring", stiffness: 350, damping: 24 }}
                     className="group flex items-center gap-3 bg-white border border-gray-200 rounded-lg p-3.5 hover:border-brand-green transition-colors"
@@ -356,8 +329,8 @@ const Services = () => {
                     <div className={`w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${tint}`}>
                       <Icon className="w-5 h-5" />
                     </div>
-                    <span className="flex-1 text-xs md:text-[13px] font-semibold text-gray-800 leading-snug">
-                      {form.name}
+                    <span className="flex-1 text-sm font-semibold text-gray-800 leading-snug">
+                      {form.name}<span className="block text-xs font-normal text-gray-600 mt-1">{form.file.endsWith("docx") ? "Word document" : "Excel spreadsheet"}</span>
                     </span>
                     <Download className="w-4 h-4 text-gray-300 group-hover:text-brand-amberDark flex-shrink-0 transition-colors" />
                   </motion.a>
@@ -366,7 +339,7 @@ const Services = () => {
             </motion.div>
           ) : (
             <div className="flex flex-col items-center text-center py-14">
-              <div className="w-14 h-14 rounded-lg bg-gray-100 text-gray-400 flex items-center justify-center mb-4">
+              <div className="w-14 h-14 rounded-lg bg-gray-100 text-gray-500 flex items-center justify-center mb-4">
                 <FolderSearch className="w-7 h-7" />
               </div>
               <p className="font-bold text-gray-700">No forms match "{search}"</p>
@@ -380,7 +353,7 @@ const Services = () => {
             steps={processSteps}
             eyebrow="Our Process"
             title="How It Works"
-            subtitle="From first request to signed delivery — a clear, accountable path every time."
+            subtitle="From first request to signed delivery, with a clear, accountable path every time."
           />
         </div>
 
@@ -391,12 +364,12 @@ const Services = () => {
               cause a visible seam against the Footer's own texture. */}
           <div
             className="absolute inset-0 opacity-[0.08] pointer-events-none"
-            style={{ backgroundImage: "url('/homebg.png')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'fixed' }}
+            style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll' }}
           />
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.4 }}
+            viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="relative"
           >
@@ -404,7 +377,7 @@ const Services = () => {
               Ready to Move Smarter?
             </h3>
             <p className="text-white/75 max-w-xl mx-auto mb-8">
-              We're here to help you grow without hassle — no call centres, no runaround. Just experienced
+              We're here to help you grow without hassle. No call centres, no runaround. Just experienced
               people ready to help.
             </p>
             <button

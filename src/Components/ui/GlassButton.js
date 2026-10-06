@@ -17,12 +17,12 @@ const SIZES = {
 };
 
 const GlassButton = ({ to, href, onClick, type = 'button', variant = 'primary', size = 'md', className = '', children, disabled, ...rest }) => {
-  const classes = `inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${VARIANTS[variant]} ${SIZES[size]} ${className}`;
+  const classes = `inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-full font-semibold transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${VARIANTS[variant]} ${SIZES[size]} ${className}`;
 
   if (to) {
     return (
       <motion.div {...buttonTap} className="inline-block">
-        <Link to={to} className={classes}>{children}</Link>
+        <Link to={to} onClick={onClick} className={classes} {...rest}>{children}</Link>
       </motion.div>
     );
   }
