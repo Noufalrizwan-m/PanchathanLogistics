@@ -17,7 +17,7 @@ function validateInquiry(input) {
   if (clean.name.length < 2 || /[\r\n]/.test(clean.name)) throw new Error('Please enter your full name.');
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean.email) || /[\r\n]/.test(clean.email)) throw new Error('Please enter a valid email address.');
   const phone = parsePhoneNumberFromString(clean.phone, { defaultCountry: 'IN', extract: false });
-  if (!phone?.isValid() || phone.ext || !/^[+\d\s().-]+$/.test(clean.phone)) throw new Error('Please enter a valid phone number, including the country code.');
+  if (!phone?.isValid() || phone.ext || /^(\d)\1+$/.test(phone.nationalNumber) || !/^[+\d\s().-]+$/.test(clean.phone)) throw new Error('Please enter a valid phone number, including the country code.');
   clean.phone = phone.number;
   if (!SERVICES.has(clean.service)) throw new Error('Please choose a service.');
   if (!/^[\w-]{10,100}$/.test(clean.submissionId)) throw new Error('Please refresh the page and try again.');

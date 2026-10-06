@@ -72,28 +72,28 @@ const Contact = () => {
             <h2 className="text-2xl font-sora font-bold text-gray-900 mb-7">Our Information</h2>
             <div className="flex flex-col gap-6">
               <div className="flex items-start gap-4">
-                <Phone className="w-5 h-5 text-brand-amber mt-1 shrink-0" />
+                <Phone className="w-5 h-5 text-brand-amber mt-4 shrink-0" />
                 <div className="min-w-0">
                   <h3 className="text-xs font-bold uppercase tracking-wide text-brand-green mb-1">24/7 Support</h3>
                   <a href={business.phoneHref} className="inline-flex min-h-11 sm:min-h-0 items-center py-1 text-base font-semibold text-gray-700">{business.phone}</a>
                 </div>
               </div>
               <div className="flex items-start gap-4">
-                <Mail className="w-5 h-5 text-brand-amber mt-1 shrink-0" />
+                <Mail className="w-5 h-5 text-brand-amber mt-4 shrink-0" />
                 <div className="min-w-0">
                   <h3 className="text-xs font-bold uppercase tracking-wide text-brand-green mb-1">Email Enquiries</h3>
                   <a href={`mailto:${business.email}`} className="inline-flex min-h-11 sm:min-h-0 items-center py-1 text-base font-semibold text-gray-700 break-all">{business.email}</a>
                 </div>
               </div>
               <div className="flex items-start gap-4">
-                <MapPin className="w-5 h-5 text-brand-amber mt-1 shrink-0" />
+                <MapPin className="w-5 h-5 text-brand-amber mt-6 shrink-0" />
                 <div className="min-w-0">
                   <h3 className="text-xs font-bold uppercase tracking-wide text-brand-green mb-1">Corporate Address</h3>
                   <address className="not-italic text-base font-semibold leading-relaxed text-gray-700">{business.address}</address>
                 </div>
               </div>
               <div className="flex items-start gap-4">
-                <Clock className="w-5 h-5 text-brand-amber mt-1 shrink-0" />
+                <Clock className="w-5 h-5 text-brand-amber mt-4 shrink-0" />
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-wide text-brand-green mb-1">Office Hours (IST)</h3>
                   <p className="text-base font-semibold text-gray-700">Mon to Sat: 10:00 AM to 7:30 PM</p>

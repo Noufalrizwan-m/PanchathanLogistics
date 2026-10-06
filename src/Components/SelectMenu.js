@@ -16,6 +16,12 @@ export default function SelectMenu({ id, labelId, label, value, options, onChang
   const filtered = options.filter(option => option.label.toLowerCase().includes(query.toLowerCase()));
   const close = () => { setOpen(false); trigger.current?.focus({ preventScroll: true }); };
   const choose = option => { onChange(option.value); close(); };
+  const selectExactCallingCode = () => {
+    const normalized = query.trim().replace(/^\+/, '');
+    if (!normalized || !/^\d+$/.test(normalized)) return;
+    const exact = filtered.filter(option => option.label.match(new RegExp(`\\(\\+${normalized}\\)$`)));
+    if (exact.length === 1) choose(exact[0]);
+  };
 
   useLayoutEffect(() => {
     if (!open) return;
@@ -94,6 +100,7 @@ export default function SelectMenu({ id, labelId, label, value, options, onChang
           <input ref={search} aria-label="Search countries" role="combobox" aria-autocomplete="list"
             aria-controls={menuId} aria-expanded="true" aria-activedescendant={filtered[active] ? `${menuId}-${active}` : undefined}
             value={query} onChange={event => { setQuery(event.target.value); setActive(0); }}
+            onBlur={selectExactCallingCode}
             placeholder="Search country or code" className="w-full min-w-0 py-2 text-base outline-none" />
         </div>}
         <div ref={list} id={menuId} role="listbox" aria-label={label} tabIndex={-1}
