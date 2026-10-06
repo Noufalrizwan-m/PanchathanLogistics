@@ -256,7 +256,7 @@ const Tracking = () => {
     const [error, setError] = useState(null);
     const [copySuccess, setCopySuccess] = useState(false);
     const [podUrl, setPodUrl] = useState(null);
-    const [podAvailable, setPodAvailable] = useState(false);
+    // const [podAvailable, setPodAvailable] = useState(false);
     const [checkingPod, setCheckingPod] = useState(false);
     /**
          * Converts a Base64 string to a Blob object.
