@@ -4,7 +4,7 @@ export const business = {
   salesEmail: 'sales.panchathanlogistics@gmail.com',
   phone: '+91 73394 33590',
   phoneHref: 'tel:+917339433590',
-  address: 'Plot No. 65, Annai Therasa Street, V.O.C. Nagar, Pammal, Chennai, Tamil Nadu 600075',
+  address: '#1, Pallavan St, VOC Nagar, Pammal, Chennai, Tamil Nadu 600075',
   officeMapUrl: 'https://maps.app.goo.gl/Z8RDckhSS3xroAAZ7',
   officeMapEmbedUrl: 'https://www.google.com/maps?q=12.9703268,80.1311901&z=17&output=embed',
 };

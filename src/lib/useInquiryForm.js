@@ -14,7 +14,10 @@ export default function useInquiryForm() {
   const submission = useRef(null);
   const result = useRef(null);
   const update = event => {
-    setForm(previous => ({ ...previous, [event.target.name]: event.target.value }));
+    const value = event.target.name === 'email'
+      ? event.target.value.toLowerCase()
+      : event.target.value;
+    setForm(previous => ({ ...previous, [event.target.name]: value }));
     submission.current = null;
     if (status === 'error') setStatus('idle');
   };
@@ -25,7 +28,8 @@ export default function useInquiryForm() {
       setError('Please choose a service.'); setStatus('error'); return;
     }
     const phone = parsePhoneNumberFromString(form.phone, { defaultCountry: form.phoneCountry, extract: false });
-    if (!phone?.isValid() || phone.ext || !/^[+\d\s().-]+$/.test(form.phone)) {
+    const repeatedDigit = phone?.nationalNumber && /^(\d)\1+$/.test(phone.nationalNumber);
+    if (!phone?.isValid() || phone.ext || repeatedDigit || !/^\d+$/.test(form.phone)) {
       setError('Enter a valid phone number for the selected country.');
       setStatus('error'); return;
     }

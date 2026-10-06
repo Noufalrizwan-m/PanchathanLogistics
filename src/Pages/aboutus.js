@@ -62,13 +62,13 @@ const About = () => {
             className="absolute pointer-events-none"
             style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll' }}
           />
-          <div className="relative max-w-5xl mx-auto px-6">
+          <div className="relative max-w-6xl mx-auto px-32">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.4 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="mb-10 md:mb-12 border-b border-white/20 pb-4"
+              className="mb-10 md:mb-12 pb-4"
             >
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-5 inline-block">
                 Home / About Us
@@ -82,7 +82,7 @@ const About = () => {
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8"
             >
-              <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-lg border border-white/20 bg-white overflow-hidden flex-shrink-0">
+              <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-lg  overflow-hidden flex-shrink-0">
                 <img
                   src="/ceo-288.webp"
                   width="288" height="230"

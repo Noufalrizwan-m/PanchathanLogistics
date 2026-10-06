@@ -26,7 +26,7 @@ function chooseCountry(country) {
 }
 function completeForm() {
   fireEvent.change(screen.getByLabelText(/Full Name/i),{target:{value:'Review Test'}});
-  fireEvent.change(screen.getByLabelText(/Work Email/i),{target:{value:'review@example.com'}});
+  fireEvent.change(screen.getByLabelText(/Work Email/i),{target:{value:'REVIEW@EXAMPLE.COM'}});
   fireEvent.change(screen.getByLabelText(/Phone Number/i),{target:{value:'+91 73394 33590'}});
   chooseService('Air Freight');
   fireEvent.change(screen.getByLabelText(/Message/i),{target:{value:'Please quote for a sample shipment.'}});
@@ -62,15 +62,15 @@ test('send another enquiry closes the popup and leaves a fresh form',async()=>{
   expect(mockNavigate).not.toHaveBeenCalled();
 });
 
-test('country selector defaults to India and pasted international numbers select their country',()=>{
+test('country selector defaults to India and phone input keeps digits only',()=>{
   mount();
   expect(screen.getByLabelText('Country calling code')).toHaveTextContent('India (+91)');
   fireEvent.click(screen.getByLabelText('Country calling code'));
   expect(screen.getAllByRole('option').length).toBeGreaterThan(200);
   fireEvent.keyDown(screen.getByLabelText('Search countries'),{key:'Escape'});
   fireEvent.change(screen.getByLabelText(/Phone Number/i),{target:{value:'+44 20 7946 0018'}});
-  expect(screen.getByLabelText('Country calling code')).toHaveTextContent('United Kingdom (+44)');
-  expect(screen.getByLabelText(/Phone Number/i)).toHaveValue('2079460018');
+  expect(screen.getByLabelText('Country calling code')).toHaveTextContent('India (+91)');
+  expect(screen.getByLabelText(/Phone Number/i)).toHaveValue('4420794600');
 });
 
 test.each([
@@ -88,15 +88,51 @@ test.each([
   await screen.findByRole('alert');
   expect(JSON.parse(global.fetch.mock.calls[0][1].body).phone).toBe(expected);
   expect(screen.getByLabelText('Country calling code')).toHaveTextContent(countryNames[country]);
-  expect(screen.getByLabelText(/Phone Number/i)).toHaveValue(number);
+  expect(screen.getByLabelText(/Phone Number/i)).toHaveValue(number.replace(/\D/g, ''));
 });
 
-test.each(['1234567','7339433590012345','Call me at 7339433590'])('invalid phone number %s never calls the enquiry service',async number=>{
+test.each(['1234567','733943359'])('invalid phone number %s never calls the enquiry service',async number=>{
   global.fetch=jest.fn();mount();completeForm();
   fireEvent.change(screen.getByLabelText(/Phone Number/i),{target:{value:number}});
   fireEvent.click(screen.getByRole('button',{name:/Submit Enquiry/i}));
   expect(await screen.findByRole('alert')).toHaveTextContent('valid phone number');
   expect(global.fetch).not.toHaveBeenCalled();
+});
+
+test('phone input removes letters and symbols while typing or pasting',()=>{
+  mount();
+  const phone = screen.getByLabelText(/Phone Number/i);
+  fireEvent.change(phone,{target:{value:'Call (73394) 33590'}});
+  expect(phone).toHaveValue('7339433590');
+});
+
+test('phone input is capped at the international maximum and repeated digits are rejected',async()=>{
+  global.fetch=jest.fn();
+  mount();
+  completeForm();
+  const phone = screen.getByLabelText(/Phone Number/i);
+  fireEvent.change(phone,{target:{value:'555555555555555555555'}});
+  expect(phone).toHaveValue('5555555555');
+  fireEvent.click(screen.getByRole('button',{name:/Submit Enquiry/i}));
+  expect(await screen.findByRole('alert')).toHaveTextContent('valid phone number');
+  expect(global.fetch).not.toHaveBeenCalled();
+});
+
+test('phone length changes with the selected country',()=>{
+  mount();
+  const phone = screen.getByLabelText(/Phone Number/i);
+  expect(phone).toHaveAttribute('maxLength','10');
+  chooseCountry('AE');
+  expect(phone).toHaveAttribute('maxLength','10');
+  fireEvent.change(phone,{target:{value:'12345678901234567890'}});
+  expect(phone).toHaveValue('1234567890');
+});
+
+test('email input is normalized to lowercase',()=>{
+  mount();
+  const email = screen.getByLabelText(/Work Email/i);
+  fireEvent.change(email,{target:{value:'Contact@Example.COM'}});
+  expect(email).toHaveValue('contact@example.com');
 });
 
 
@@ -114,6 +150,16 @@ test('country search supports calling codes, keyboard selection and escape',()=>
   fireEvent.click(trigger);
   fireEvent.keyDown(screen.getByLabelText('Search countries'),{key:'Escape'});
   expect(trigger).toHaveAttribute('aria-expanded','false');
+});
+
+test('a unique international calling code selects without pressing Enter',()=>{
+  mount();
+  const trigger = screen.getByLabelText('Country calling code');
+  fireEvent.click(trigger);
+  const search = screen.getByLabelText('Search countries');
+  fireEvent.change(search,{target:{value:'+971'}});
+  fireEvent.blur(search);
+  expect(trigger).toHaveTextContent('United Arab Emirates (+971)');
 });
 
 test('service is required before sending and can be selected using the keyboard',async()=>{

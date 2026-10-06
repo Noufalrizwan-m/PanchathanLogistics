@@ -554,7 +554,7 @@ const Tracking = () => {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                    className="relative z-10 max-w-4xl mx-auto px-6 md:px-12 text-center"
+                    className="relative max-w-4xl "
                 >
                     <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-4 inline-block">
                         Home / Tracking
@@ -562,7 +562,7 @@ const Tracking = () => {
                     <h1 className="font-sora text-4xl md:text-6xl font-extrabold mb-6 tracking-tight">
                         Real-Time Shipment Tracking
                     </h1>
-                    <p className="text-white/75 text-base md:text-lg max-w-2xl mx-auto">
+                    <p className="text-white/75 text-base md:text-lg max-w-2xl">
                         Your cargo's journey, visible every step of the way.
                     </p>
                 </motion.div>
