@@ -11,10 +11,14 @@ import {
     Package,
     Download,
     Copy,
+    AlertCircle, ArrowRight, Phone,
     RefreshCw // NEW: used by the new search button / loader
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
+import useSmallScreen from '../lib/useSmallScreen';
+import { inspectAwb } from '../lib/awbFormat';
+import AwbNumberField from '../Components/AwbNumberField';
 import SEO from '../Components/SEO'; // NEW: from new code
 import { business } from '../lib/business'; // NEW: used by "Call for help" link
 
@@ -249,11 +253,15 @@ const TrackingProgressBar = ({ currentStatus, progressSteps }) => {
 // Base URL for your tracking API
 const Tracking = () => {
     const [searchParams] = useSearchParams();
-    const initialAwb = useMemo(() => String(searchParams.get('awb') || searchParams.get('data') || '').trim(), [searchParams]);
-    const [awb, setAwb] = useState(initialAwb);
+    const initialAwb = useMemo(() => inspectAwb(searchParams.get('awb') || searchParams.get('data')).normalized, [searchParams]);
+    const [awb, setAwb] = useState(initialAwb || 'PL786');
+    const awbFormat = inspectAwb(awb);
     const [trackingData, setTrackingData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [errorKind, setErrorKind] = useState('not-found');
+    const [failedAwb, setFailedAwb] = useState('');
+    const small = useSmallScreen();
     const [copySuccess, setCopySuccess] = useState(false);
     const [podUrl, setPodUrl] = useState(null);
     // const [podAvailable, setPodAvailable] = useState(false);
@@ -264,7 +272,7 @@ const Tracking = () => {
          * @param {string} mimeType The MIME type of the data (e.g., 'image/jpeg').
          * @returns {Blob} A Blob object.
          */
-    const base64ToBlob = (base64, mimeType = "image/jpeg") => {
+    const base64ToBlob = useCallback((base64, mimeType = "image/jpeg") => {
         // Remove data URI prefix if present
         const base64WithoutPrefix = base64.startsWith('data:') ? base64.split(',')[1] : base64;
         const byteCharacters = atob(base64WithoutPrefix);
@@ -273,55 +281,47 @@ const Tracking = () => {
             .map((_, i) => byteCharacters.charCodeAt(i));
         const byteArray = new Uint8Array(byteNumbers);
         return new Blob([byteArray], { type: mimeType });
-    };
+    }, []);
     /**
      * Handles fetching and decoding the POD image.
      */
     useEffect(() => {
+        if (!trackingData?.awb || trackingData.status !== 'DELIVERED') {
+            setPodUrl(null);
+            setCheckingPod(false);
+            return;
+        }
+        const controller = new AbortController();
+        let active = true;
+        let objectUrl;
+        setCheckingPod(true);
         const fetchAndDecodePOD = async () => {
-            // Only try to fetch POD if tracking data and AWB are available, and the shipment is DELIVERED
-            if (!trackingData?.awb || trackingData.status !== 'DELIVERED') {
-                setPodUrl(null); // Clear POD if AWB is missing or not delivered
-                return;
-            }
-
-            setCheckingPod(true); // Indicate that we are checking for POD
             try {
-                // Make a GET request to your POD API endpoint with the AWB number
-                const response = await axios.get(`${POD_API_BASE_URL}?inv_no=${trackingData.awb}`);
-
-                // Check if the API returned a successful status and data
-                if (response.data && response.data.status === "success" && response.data.data) {
-                    const base64Data = response.data.data;
-                    // Infer MIME type from the Base64 string or default to 'image/jpeg'
-                    const mimeType = base64Data.startsWith('data:image/') ? base64Data.split(';')[0].split(':')[1] : 'image/jpeg';
-
-                    // Convert Base64 string to Blob
-                    const blob = base64ToBlob(base64Data, mimeType);
-                    // Create an object URL for the Blob
-                    const url = URL.createObjectURL(blob);
-                    setPodUrl(url); // Store the URL in state
-                } else {
-                    console.warn("POD API did not return valid image data:", response.data);
-                    setPodUrl(null); // Clear POD URL if data is invalid
-                }
-            } catch (err) {
-                console.error("Error fetching or decoding POD:", err);
-                setPodUrl(null); // Clear POD URL on error
+                const response = await axios.get(`${POD_API_BASE_URL}?inv_no=${encodeURIComponent(trackingData.awb)}`, {
+                    signal: controller.signal, timeout: 15000,
+                });
+                if (!active) return;
+                if (response.data?.status === 'success' && typeof response.data.data === 'string' && response.data.data) {
+                    const base64 = response.data.data;
+                    const mime = base64.startsWith('data:image/') ? base64.split(';')[0].split(':')[1] : 'image/jpeg';
+                    objectUrl = URL.createObjectURL(base64ToBlob(base64, mime));
+                    setPodUrl(objectUrl);
+                } else setPodUrl(null);
+            } catch (error) {
+                if (!active) return;
+                console.error('Error fetching or decoding POD:', error);
+                setPodUrl(null);
             } finally {
-                setCheckingPod(false); // Finish checking
+                if (active) setCheckingPod(false);
             }
         };
-
         fetchAndDecodePOD();
-
-        // Cleanup function for object URL to prevent memory leaks
         return () => {
-            if (podUrl) {
-                URL.revokeObjectURL(podUrl);
-            }
+            active = false;
+            controller.abort();
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
         };
-    }, [trackingData?.awb, trackingData?.status, podUrl]); // Dependencies: Re-run when AWB, status, or podUrl changes
+    }, [trackingData?.awb, trackingData?.status, base64ToBlob]);
     /**
      * Handles copying the AWB number to the clipboard.
      * @param {string} text The AWB number to copy.
@@ -341,8 +341,10 @@ const Tracking = () => {
      * @param {string} queryAwb The AWB number to track.
      */
     const fetchTrackingData = useCallback(async (queryAwb) => {
-        const trimmedAwb = String(queryAwb).trim();
-        if (!trimmedAwb) {
+        const checked = inspectAwb(queryAwb);
+        const trimmedAwb = checked.normalized;
+        if (!checked.complete) {
+            setLoading(false);
             setError(null);
             setTrackingData(null);
             setPodUrl(null);
@@ -351,6 +353,8 @@ const Tracking = () => {
 
         setLoading(true);
         setError(null);
+        setErrorKind('not-found');
+        setFailedAwb(trimmedAwb);
         setTrackingData(null);
         setPodUrl(null);
 
@@ -369,7 +373,7 @@ const Tracking = () => {
             const responseData = await response.json();
 
             if (responseData.status === "failed" || !responseData.data || responseData.data.length === 0) {
-                setError(typeof responseData.data === 'string' ? responseData.data : "AWB tracking data not found. Please double-check the number.");
+                setError("We couldn’t find a shipment for this AWB. Check the number on your booking receipt and try again.");
                 return;
             }
 
@@ -461,7 +465,8 @@ const Tracking = () => {
 
         } catch (err) {
             console.error("Tracking API Error:", err);
-            setError(err.message || "Failed to fetch tracking details due to a network or parsing error.");
+            setErrorKind('unavailable');
+            setError("Tracking updates are temporarily unavailable. Please try again in a moment or contact our team.");
         } finally {
             setLoading(false);
         }
@@ -473,9 +478,10 @@ const Tracking = () => {
      */
     const handleSearchSubmit = useCallback((e) => {
         e.preventDefault();
-        if (awb) {
+        const checked = inspectAwb(awb);
+        if (checked.complete) {
             const newSearchParams = new URLSearchParams();
-            newSearchParams.set('awb', awb);
+            newSearchParams.set('awb', checked.normalized);
             // Update URL without a full page reload
             window.history.replaceState(null, '', `?${newSearchParams.toString()}`);
             fetchTrackingData(awb);
@@ -545,7 +551,7 @@ const Tracking = () => {
             <SEO path="/tracking" />
 
             {/* New Hero Section */}
-            <section className="relative bg-brand-green text-white py-12 md:py-20 overflow-hidden flex items-center justify-center min-h-[42vh]">
+            <section className="tracking-hero relative bg-brand-green text-white py-12 md:py-20 overflow-hidden flex items-center justify-center min-h-[42vh]">
                 <div
                     className="absolute inset-0 opacity-[0.08] pointer-events-none"
                     style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll' }}
@@ -554,7 +560,7 @@ const Tracking = () => {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                    className="relative max-w-4xl "
+                    className="relative max-w-4xl w-full px-6 md:px-12 lg:w-auto lg:px-0"
                 >
                     <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-4 inline-block">
                         Home / Tracking
@@ -568,7 +574,7 @@ const Tracking = () => {
                 </motion.div>
             </section>
 
-            <section className="py-16 md:py-24 px-4 md:px-12 max-w-7xl mx-auto">
+            <section className="tracking-search py-16 md:py-24 px-4 md:px-12 max-w-7xl mx-auto">
                 {/* New AWB Search Form */}
                 <motion.form
                     onSubmit={handleSearchSubmit}
@@ -579,14 +585,13 @@ const Tracking = () => {
                     className="flex items-center gap-2 p-2 md:p-3 bg-white/60 backdrop-blur-xl border border-white/50 rounded-full shadow-glass-lg focus-within:border-brand-amber/60 transition-all duration-500 max-w-3xl mx-auto"
                 >
                     <Hash className="text-brand-green ml-3 w-5 h-5 md:w-6 md:h-6 flex-shrink-0" />
-                    <input
-                        type="text"
+                    <AwbNumberField
                         value={awb}
-                        onChange={(e) => setAwb(e.target.value)}
-                        aria-label="AWB or tracking number"
-                        aria-describedby="tracking-help"
-                        maxLength={80}
-                        placeholder="Enter tracking number"
+                        onChange={value => { setAwb(value); if (error) setError(null); }}
+                        aria-label="AWB remaining number"
+                        id="tracking-awb"
+                        aria-invalid={Boolean(error || (awbFormat.error && awb !== 'PL786'))}
+                        aria-describedby={error ? 'tracking-help tracking-error' : 'tracking-help'}
                         required
                         className="bg-transparent outline-none flex-1 text-base md:text-lg text-gray-800 placeholder:text-gray-500 font-medium py-2 min-w-0"
                     />
@@ -595,7 +600,7 @@ const Tracking = () => {
                         whileTap={{ scale: 0.95 }}
                         type="submit"
                         aria-label="Track shipment"
-                        disabled={loading}
+                        disabled={loading || !awbFormat.complete}
                         className="p-3 md:p-4 rounded-full bg-brand-amber text-gray-900 hover:bg-brand-amberDark transition-colors duration-300 shadow-lg disabled:bg-gray-300 flex items-center justify-center flex-shrink-0"
                     >
                         {loading ? (
@@ -606,7 +611,7 @@ const Tracking = () => {
                     </motion.button>
                 </motion.form>
 
-                <p id="tracking-help" className="text-sm text-gray-600 text-center mt-4">Use the AWB / tracking number on your booking receipt.</p>
+                <p id="tracking-help" aria-live="polite" className={`text-sm text-center mt-4 ${(awbFormat.error && awb !== 'PL786') ? 'text-amber-800 font-semibold' : 'text-gray-600'}`}>{(awb !== 'PL786' && awbFormat.error) || 'PL786 is already filled in. Enter the remaining digits from your booking receipt.'}</p>
 
                 {/* New Loading State */}
                 {loading && (
@@ -622,15 +627,30 @@ const Tracking = () => {
                 )}
 
                 {/* New Error State */}
-                {error && (
-                    <div role="alert" className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-5 max-w-2xl mx-auto text-red-800">
+                {error && (small ? (
+                    <motion.div id="tracking-error" role="alert" className="tracking-error" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.25 }}>
+                        <div className="tracking-error-icon"><AlertCircle size={26} aria-hidden="true" /></div>
+                        <p className="tracking-error-eyebrow">{errorKind === 'not-found' ? 'Check your AWB' : 'Please try again'}</p>
+                        <h2>{errorKind === 'not-found' ? 'Shipment not found' : 'Updates unavailable'}</h2>
+                        <span className="tracking-error-awb">{failedAwb}</span>
+                        <p>{error}</p>
+                        <div className="tracking-error-actions">
+                            <button type="button" onClick={() => {
+                                if (errorKind === 'unavailable') fetchTrackingData(failedAwb);
+                                else { const input = document.getElementById('tracking-awb'); input?.focus(); input?.select(); }
+                            }}>{errorKind === 'not-found' ? 'Check another AWB' : 'Try again'}<ArrowRight size={16} aria-hidden="true" /></button>
+                            <a href={business.phoneHref}><Phone size={16} aria-hidden="true" />Call for help</a>
+                        </div>
+                    </motion.div>
+                ) : (
+                    <div id="tracking-error" role="alert" className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-5 max-w-2xl mx-auto text-red-800">
                         <p>{error}</p>
                         <div className="flex flex-wrap gap-4 mt-3">
                             <button type="button" onClick={() => fetchTrackingData(awb)} className="min-h-11 font-semibold underline">Try again</button>
                             <a href={business.phoneHref} className="min-h-11 inline-flex items-center font-semibold underline">Call for help</a>
                         </div>
                     </div>
-                )}
+                ))}
 
                 {/* New Fraud Notice */}
                 <div className="beware-notice overflow-hidden relative w-full rounded-full my-8 bg-red-50/60 backdrop-blur-md border border-red-100 text-red-700" tabIndex={0} aria-label="Beware of fraudulent calls or messages. Panchathan Logistics will never ask for personal details or payment outside official channels. Always verify before sharing information.">

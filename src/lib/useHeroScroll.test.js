@@ -63,3 +63,38 @@ test('an upward gesture from a later section does not snap when passing section 
     Object.defineProperty(window, 'scrollY', scrollDescriptor);
   }
 });
+
+test('one vertical touch gesture leaves the hero, while horizontal gestures are released', () => {
+  const originalMatch = window.matchMedia;
+  const originalScroll = window.scrollTo;
+  window.matchMedia = jest.fn(() => ({ matches: false }));
+  window.scrollTo = jest.fn();
+  const raf = jest.spyOn(window, 'requestAnimationFrame').mockReturnValue(1);
+  const cancel = jest.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+  const heroRef = { current: { getBoundingClientRect: () => ({ top: 0, bottom: 844 }) } };
+  const { unmount } = renderHook(() => useHeroScroll(heroRef));
+  const touch = (type, x, y, target = document.body) => {
+    const event = new Event(type, { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'touches', { value: [{ clientX: x, clientY: y }] });
+    target.dispatchEvent(event);
+    return event;
+  };
+  try {
+    touch('touchstart', 100, 300);
+    expect(touch('touchmove', 180, 290).defaultPrevented).toBe(false);
+    expect(window.scrollTo).not.toHaveBeenCalled();
+    const carousel = document.createElement('div');
+    carousel.setAttribute('aria-roledescription', 'carousel');
+    document.body.appendChild(carousel);
+    touch('touchstart', 100, 300, carousel);
+    expect(touch('touchmove', 100, 230, carousel).defaultPrevented).toBe(false);
+    expect(window.scrollTo).not.toHaveBeenCalled();
+    carousel.remove();
+    touch('touchstart', 100, 300);
+    expect(touch('touchmove', 100, 230).defaultPrevented).toBe(true);
+    expect(window.scrollTo).toHaveBeenCalledWith({ top: 748, behavior: 'smooth' });
+  } finally {
+    unmount(); window.matchMedia = originalMatch; window.scrollTo = originalScroll;
+    raf.mockRestore(); cancel.mockRestore();
+  }
+});

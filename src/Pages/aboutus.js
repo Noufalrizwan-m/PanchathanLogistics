@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { Shield, Eye, Target, CheckCircle2, ArrowRight } from 'lucide-react';
 import { staggerContainer, staggerItem } from '../lib/motion';
 import SEO from '../Components/SEO';
+import ResponsiveCarousel from '../Components/ResponsiveCarousel';
+import useSmallScreen from '../lib/useSmallScreen';
 
 const milestones = [
   {
@@ -35,6 +37,7 @@ const branches = ['Chennai', 'Kochi', 'Bangalore', 'Hyderabad', 'Mumbai', 'Kolka
 
 const About = () => {
   const navigate = useNavigate();
+  const small = useSmallScreen();
 
   // Mandatory scroll-snap traps scroll on a page this long and blocks
   // reaching the footer — same workaround used on Home and Services.
@@ -48,7 +51,7 @@ const About = () => {
   };
 
   return (
-    <div>
+    <div className="about-page">
       <SEO path="/about" />
       {/* HERO */}
 
@@ -62,7 +65,7 @@ const About = () => {
             className="absolute pointer-events-none"
             style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll' }}
           />
-          <div className="relative max-w-6xl mx-auto px-32">
+          <div className="relative max-w-6xl mx-auto px-6 md:px-12 lg:px-32">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -84,7 +87,7 @@ const About = () => {
             >
               <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-lg  overflow-hidden flex-shrink-0">
                 <img
-                  src="/ceo-288.webp"
+                  data-scroll-photo src="/ceo-288.webp"
                   width="288" height="230"
                   alt="Mohammed Jaffar Bin Azeez Basha, founder and CEO"
                   className="w-full h-full object-cover object-center"
@@ -141,7 +144,7 @@ const About = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="relative h-[320px] sm:h-[400px] lg:h-[480px] w-full rounded-lg overflow-hidden border border-white/20 shadow-sm"
+            className="about-office-visual relative h-[320px] sm:h-[400px] lg:h-[480px] w-full rounded-lg overflow-hidden border border-white/20 shadow-sm"
           >
             <img
               src="/ofc-960.webp"
@@ -173,13 +176,14 @@ const About = () => {
             {milestones.map((m, i) => (
               <motion.div
                 key={i}
+                data-scroll-timeline
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.5 }}
                 transition={{ duration: 0.5, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
               >
                 <div className={`w-2.5 h-2.5 rounded-full mb-4 ${i === 0 ? 'bg-brand-amber' : 'bg-brand-green'}`} />
-                <p className="text-xs font-bold uppercase tracking-widest text-brand-amberDark mb-1">{m.year}</p>
+                <p data-scroll-year className="text-xs font-bold uppercase tracking-widest text-brand-amberDark mb-1">{m.year}</p>
                 <h3 className="text-lg md:text-xl font-sora font-bold text-gray-900 mb-2">{m.title}</h3>
                 <p className="text-base text-gray-600 leading-relaxed">{m.desc}</p>
               </motion.div>
@@ -189,7 +193,7 @@ const About = () => {
       </section>
 
       {/* PHILOSOPHY */}
-      <section id="philosophy" className="relative bg-white section-space border-b border-gray-200 scroll-mt-24 overflow-hidden">
+      <section data-scroll-line id="philosophy" className="relative bg-white section-space border-b border-gray-200 scroll-mt-24 overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.1] pointer-events-none"
           style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll', filter: 'invert(1)' }}
@@ -200,14 +204,14 @@ const About = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="order-2 lg:order-1 relative h-[320px] md:h-[440px] rounded-lg border border-gray-200 overflow-hidden bg-brand-green"
+            className="about-truck-visual order-2 lg:order-1 relative h-[320px] md:h-[440px] rounded-lg border border-gray-200 overflow-hidden bg-brand-green"
           >
             <div
               className="absolute inset-0 opacity-[0.08] pointer-events-none"
               style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat' }}
             />
             <img
-              src="/truck1-640.webp" loading="lazy" width="433" height="577"
+              data-scroll-photo src="/truck1-640.webp" loading="lazy" width="433" height="577"
               alt="Panchathan Logistics cargo truck"
               className="relative w-full h-full object-contain p-6"
             />
@@ -254,6 +258,7 @@ const About = () => {
           >
             <h2 className="text-2xl md:text-4xl font-sora font-bold text-brand-green">Operational Pillars</h2>
           </motion.div>
+          {small ? <ResponsiveCarousel items={pillars} label="Operational pillars" theme="green" /> : (
           <motion.div {...staggerContainer(0.12)} className="grid md:grid-cols-3 gap-6">
             {pillars.map((p, i) => (
               <motion.div
@@ -268,7 +273,7 @@ const About = () => {
                 <p className="text-base text-gray-600 leading-relaxed">{p.desc}</p>
               </motion.div>
             ))}
-          </motion.div>
+          </motion.div>)}
         </div>
       </section>
 

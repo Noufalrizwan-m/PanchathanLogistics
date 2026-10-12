@@ -11,22 +11,25 @@ import EnquirySuccessDialog from '../Components/EnquirySuccessDialog';
 import PhoneNumberField from '../Components/PhoneNumberField';
 import SelectMenu from '../Components/SelectMenu';
 import PrivacyNotice from '../Components/PrivacyNotice';
+import CompactHubs from '../Components/CompactHubs';
+import useSmallScreen from '../lib/useSmallScreen';
 import { useNavigate } from 'react-router-dom';
 
 const inputClass = "border border-gray-300 rounded px-4 py-3 focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition-colors bg-white text-gray-900 placeholder:text-gray-400 disabled:opacity-60";
 
 const branches = [
-  { city: 'Chennai', hq: true, address: 'Head Quarters, Plot No. 65, Annai Therasa Street, V.O.C. Nagar, Pammal, Chennai, Tamil Nadu - 600075' },
-  { city: 'Kochi', address: 'New/63/3289, MBA Residency, Brother Mayooras Road, Kochi - 682016' },
-  { city: 'Bangalore', address: 'No.29, 6th Main, 10th Cross, Sampangi Ram Nagar, Bangalore - 560027' },
-  { city: 'Hyderabad', address: '1-8-506/B/1, Prakash Nagar, Begumpet, Hyderabad - 500016' },
-  { city: 'Mumbai', address: 'Shop 03A/1B, Shanti Nagar, Opp. Marol MIDC Bus Depot, Andheri East, Mumbai - 400093' },
-  { city: 'Kolkata', address: '#193A/17 Picnic Garden Road, Kolkata - 700039' },
-  { city: 'Delhi', address: 'Plot No. A-50, Near Grand Shoba Hotel, Road No. 6, Mahipalpur, New Delhi - 110037' },
+  { city: 'Chennai', hq: true, address: business.address, addressLines: ['#1, Pallavan St', 'VOC Nagar, Pammal', 'Chennai, Tamil Nadu – 600075'] },
+  { city: 'Kochi', address: 'New/63/3289, MBA Residency, Brother Mayooras Road, Kochi - 682016', addressLines: ['New/63/3289, MBA Residency', 'Brother Mayooras Road', 'Kochi – 682016'] },
+  { city: 'Bangalore', address: 'No.29, 6th Main, 10th Cross, Sampangi Ram Nagar, Bangalore - 560027', addressLines: ['No. 29, 6th Main, 10th Cross', 'Sampangi Ram Nagar', 'Bangalore – 560027'] },
+  { city: 'Hyderabad', address: '1-8-506/B/1, Prakash Nagar, Begumpet, Hyderabad - 500016', addressLines: ['1-8-506/B/1, Prakash Nagar', 'Begumpet', 'Hyderabad – 500016'] },
+  { city: 'Mumbai', address: 'Shop 03A/1B, Shanti Nagar, Opp. Marol MIDC Bus Depot, Andheri East, Mumbai - 400093', addressLines: ['Shop 03A/1B, Shanti Nagar', 'Opp. Marol MIDC Bus Depot, Andheri East', 'Mumbai – 400093'] },
+  { city: 'Kolkata', address: '#193A/17 Picnic Garden Road, Kolkata - 700039', addressLines: ['#193A/17 Picnic Garden Road', 'Kolkata – 700039'] },
+  { city: 'Delhi', address: 'Plot No. A-50, Near Grand Shoba Hotel, Road No. 6, Mahipalpur, New Delhi - 110037', addressLines: ['Plot No. A-50, Near Grand Shoba Hotel', 'Road No. 6, Mahipalpur', 'New Delhi – 110037'] },
 ];
 
 const Contact = () => {
   const navigate = useNavigate();
+  const small = useSmallScreen();
   const { form, status, error, update, submit: handleSubmit, setStatus } = useInquiryForm();
   const handleChange = (field) => (event) => update({ target: { name: field, value: event.target.value } });
 
@@ -65,7 +68,7 @@ const Contact = () => {
       <section className="section-space px-6 md:px-12 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Contact information follows the original two-card layout. */}
-          <motion.aside
+          <motion.aside data-scroll-info
             initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.6 }}
             className="order-2 lg:order-1 lg:col-span-4 rounded-xl border-t-4 border-brand-green bg-white p-6 md:p-8 shadow-lg">
@@ -232,10 +235,12 @@ const Contact = () => {
               Strategic branches ensuring seamless execution across every major commercial corridor in India.
             </p>
           </motion.div>
+          {small ? <CompactHubs branches={branches} /> : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {branches.map((b, i) => (
               <motion.div
                 key={b.city}
+                data-scroll-hub
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
@@ -260,7 +265,7 @@ const Contact = () => {
                 </div>
               </motion.div>
             ))}
-          </div>
+          </div>)}
         </div>
       </section>
     </div>

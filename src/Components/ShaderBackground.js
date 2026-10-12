@@ -56,9 +56,18 @@ const ShaderBackground = ({ className = '' }) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    const smallScreen = window.matchMedia('(max-width: 1023px)');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let rafId;
+    let lastFrame = 0;
+    const schedule = () => {
+      cancelAnimationFrame(rafId);
+      if (!document.hidden) rafId = requestAnimationFrame(render);
+    };
     function syncSize() {
-      const w = canvas.clientWidth || 1280;
-      const h = canvas.clientHeight || 720;
+      const scale = smallScreen.matches ? 0.65 : 1;
+      const w = Math.round((canvas.clientWidth || 1280) * scale);
+      const h = Math.round((canvas.clientHeight || 720) * scale);
       if (canvas.width !== w || canvas.height !== h) {
         canvas.width = w;
         canvas.height = h;
@@ -68,7 +77,7 @@ const ShaderBackground = ({ className = '' }) => {
     let resizeObserver;
     let resizeFrame;
     if (typeof ResizeObserver !== 'undefined') {
-      resizeObserver = new ResizeObserver(() => { cancelAnimationFrame(resizeFrame); resizeFrame = requestAnimationFrame(syncSize); });
+      resizeObserver = new ResizeObserver(() => { cancelAnimationFrame(resizeFrame); resizeFrame = requestAnimationFrame(() => { syncSize(); schedule(); }); });
       resizeObserver.observe(canvas);
     }
     syncSize();
@@ -105,23 +114,40 @@ const ShaderBackground = ({ className = '' }) => {
     };
     window.addEventListener('mousemove', handleMouseMove);
 
-    let rafId;
     function render(t) {
+      if (document.hidden) return;
+      // Keep scroll/content motion at the browser's native rate; the ambient
+      // background needs only 30fps and fewer pixels on smaller screens.
+      if (smallScreen.matches && !reducedMotion.matches && t - lastFrame < 1000 / 30) {
+        rafId = requestAnimationFrame(render);
+        return;
+      }
+      lastFrame = t;
       if (typeof ResizeObserver === 'undefined') syncSize();
       gl.viewport(0, 0, canvas.width, canvas.height);
-      if (uTime) gl.uniform1f(uTime, t * 0.001);
+      if (uTime) gl.uniform1f(uTime, reducedMotion.matches ? 0 : t * 0.001);
       if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
       if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      rafId = requestAnimationFrame(render);
+      if (!reducedMotion.matches) rafId = requestAnimationFrame(render);
     }
-    rafId = requestAnimationFrame(render);
+    const onSettingsChange = () => { syncSize(); schedule(); };
+    document.addEventListener('visibilitychange', schedule);
+    smallScreen.addEventListener('change', onSettingsChange);
+    reducedMotion.addEventListener('change', onSettingsChange);
+    schedule();
 
     return () => {
       cancelAnimationFrame(rafId);
       cancelAnimationFrame(resizeFrame);
       window.removeEventListener('mousemove', handleMouseMove);
       if (resizeObserver) resizeObserver.disconnect();
+      document.removeEventListener('visibilitychange', schedule);
+      smallScreen.removeEventListener('change', onSettingsChange);
+      reducedMotion.removeEventListener('change', onSettingsChange);
+      gl.getAttachedShaders(program)?.forEach(shader => gl.deleteShader(shader));
+      gl.deleteBuffer(buffer);
+      gl.deleteProgram(program);
     };
   }, []);
 

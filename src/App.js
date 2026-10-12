@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect } from "react";
 
 // Import Components
 import Header from '../src/Components/header';
+import ResponsiveScrollEffects from './Components/ResponsiveScrollEffects';
 import Footer from '../src/Components/footer';
 import ShaderBackground from './Components/ShaderBackground';
 import { MotionConfig } from 'framer-motion';
@@ -63,6 +64,7 @@ function App() {
           <Route path="*" element={<div className="page-container section-space"><SEO path="/404" title="Page not found" description="The requested page is unavailable." /><h1 className="text-4xl font-bold text-brand-green mb-4">Page not found</h1><p className="mb-6">The page you requested is unavailable.</p><a className="underline text-brand-green font-semibold" href="/">Return home</a></div>} />
         </Routes>
       </main>
+      <ResponsiveScrollEffects />
       <Footer />
       </MotionConfig>
     </Router>

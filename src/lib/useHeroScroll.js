@@ -9,6 +9,7 @@ export default function useHeroScroll(heroRef) {
     let wheelStart = window.scrollY;
     let wheelDirection = 0;
     let touchY = 0;
+    let touchX = 0;
     let touchScroll = 0;
     let touchHandled = false;
     let touchIgnored = false;
@@ -21,7 +22,7 @@ export default function useHeroScroll(heroRef) {
       const next = Math.max(top, rect.bottom + window.scrollY - 96);
       return { top, next };
     };
-    const isControl = target => target instanceof Element && Boolean(target.closest('input, textarea, select, button, a, [role="dialog"], [role="navigation"], [contenteditable="true"]'));
+    const isControl = target => target instanceof Element && Boolean(target.closest('input, textarea, select, button, a, [role="dialog"], [role="navigation"], [contenteditable="true"], [aria-roledescription="carousel"]'));
     const jump = target => {
       cancelAnimationFrame(frame);
       if (reducedMotion) { window.scrollTo({ top: target, behavior: 'instant' }); return; }
@@ -63,11 +64,13 @@ export default function useHeroScroll(heroRef) {
     const touchStart = event => {
       touchIgnored = event.touches.length !== 1 || isControl(event.target);
       if (touchIgnored) return;
+      touchX = event.touches[0].clientX;
       touchY = event.touches[0].clientY; touchScroll = window.scrollY; touchHandled = false;
     };
     const touchMove = event => {
       if (touchIgnored || event.touches.length !== 1 || isControl(event.target)) return;
       const delta = touchY - event.touches[0].clientY;
+      if (Math.abs(event.touches[0].clientX - touchX) > Math.abs(delta)) return;
       const range = bounds();
       if (delta > 0 && range && window.scrollY >= range.next - 4 && !touchHandled) return;
       if (locked || touchHandled) { event.preventDefault(); return; }

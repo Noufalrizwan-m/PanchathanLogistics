@@ -2,12 +2,14 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ClipboardCheck, Warehouse, Truck, PackageCheck } from 'lucide-react';
 import SectionHeading from './ui/SectionHeading';
+import ResponsiveCarousel from './ResponsiveCarousel';
+import useSmallScreen from '../lib/useSmallScreen';
 
 // Icon badge per delivery-process step — matches the icon treatment used
 // for trust pillars and service cards elsewhere on the site.
 const StepBadge = ({ Icon }) => (
   <div className="w-full h-full flex items-center justify-center bg-gray-50">
-    <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-brand-green text-white flex items-center justify-center">
+    <div className="delivery-step-badge w-24 h-24 md:w-28 md:h-28 rounded-full bg-brand-green text-white flex items-center justify-center">
       <Icon className="w-11 h-11 md:w-12 md:h-12" strokeWidth={1.75} />
     </div>
   </div>
@@ -35,7 +37,7 @@ const WalkingPerson = () => (
 const JourneyTrack = ({ index, total }) => {
   const progress = ((index + 1) / total) * 100;
   return (
-    <div className="relative mt-8 mb-2">
+    <div className="journey-track relative mt-8 mb-2">
       <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
         <motion.div
           initial={{ width: '0%' }}
@@ -50,7 +52,7 @@ const JourneyTrack = ({ index, total }) => {
         whileInView={{ left: `${progress}%`, opacity: 1 }}
         viewport={{ once: true, amount: 0.6 }}
         transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute -top-2.5"
+        className="journey-marker absolute -top-2.5"
         style={{ transform: 'translateX(-50%)' }}
       >
         <WalkingPerson />
@@ -88,15 +90,17 @@ const DeliveryProcess = ({
   title = 'Your Shipment, Every Step of the Way',
   subtitle = 'From booking to doorstep, the people and process behind every delivery.',
 }) => {
+  const small = useSmallScreen();
   return (
-    <section className="relative py-12 md:py-16">
+    <section className="delivery-process relative py-12 md:py-16">
       <div className="max-w-6xl mx-auto px-4 md:px-6">
         <SectionHeading eyebrow={eyebrow} title={title} subtitle={subtitle} />
       </div>
 
-      {steps.map((step, i) => (
+      {small ? <div className="max-w-6xl mx-auto px-4 md:px-6"><ResponsiveCarousel items={steps} label="Delivery process" /></div> : steps.map((step, i) => (
         <div
           key={i}
+          data-scroll-step
           className="relative md:sticky md:top-24 min-h-[420px] md:h-[480px] mb-6 md:mb-0 flex items-center justify-center px-4 md:px-6"
           style={{ zIndex: i + 1 }}
         >

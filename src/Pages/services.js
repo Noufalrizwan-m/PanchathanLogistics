@@ -1,6 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DeliveryProcess from '../Components/DeliveryProcess';
+import CompactServices from '../Components/CompactServices';
+import ResponsiveCarousel from '../Components/ResponsiveCarousel';
+import useSmallScreen from '../lib/useSmallScreen';
 import { motion } from 'framer-motion';
 import {
   Plane, Truck, Factory, Shield, BarChart2, PackageSearch,
@@ -85,6 +88,8 @@ const pillars = [
 const Services = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [allForms, setAllForms] = useState(false);
+  const small = useSmallScreen();
 
   const filteredForms = useMemo(() => {
     const q = search.trim().toUpperCase();
@@ -106,7 +111,7 @@ const Services = () => {
   }, []);
 
   return (
-    <div>
+    <div className="services-page">
       <SEO path="/services" />
       {/* HERO */}
       <section className="relative bg-brand-green text-white py-12 md:py-20 overflow-hidden">
@@ -149,7 +154,7 @@ const Services = () => {
       </section>
 
       {/* CAPABILITIES BENTO GRID */}
-      <section id="capabilities" className="section-space px-6 md:px-12 max-w-7xl mx-auto scroll-mt-24">
+      <section data-scroll-line id="capabilities" className="section-space px-6 md:px-12 max-w-7xl mx-auto scroll-mt-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -167,6 +172,7 @@ const Services = () => {
           </p>
         </motion.div>
 
+        {small ? <CompactServices services={bentoServices} onForms={scrollToForms} /> : (
         <motion.div {...staggerContainer(0.1)} className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6">
           {bentoServices.map((service, i) => {
             if (service.size === 'featured') {
@@ -198,6 +204,7 @@ const Services = () => {
               <motion.div
                 key={i}
                 id={service.id}
+                data-scroll-service
                 variants={staggerItem}
                 className={`relative scroll-mt-28 overflow-hidden border border-gray-200 rounded-lg p-6 md:p-8 flex flex-col justify-between hover:border-brand-green transition-colors ${
                   isLarge ? 'md:col-span-8 bg-white' : isTall ? 'md:col-span-4 bg-gray-50' : 'md:col-span-4 bg-white'
@@ -206,7 +213,7 @@ const Services = () => {
                 {isLarge && (
                   <service.icon className="absolute -top-2 -right-2 w-40 h-40 text-brand-green/[0.06] pointer-events-none" />
                 )}
-                <div className="relative">
+                <div data-scroll-content className="relative">
                   <service.icon className="w-8 h-8 text-brand-green mb-4" />
                   <h3 className="text-lg md:text-xl font-sora font-bold text-gray-900 mb-2">{service.name}</h3>
                   <p className="text-base text-gray-600 leading-relaxed mb-4">{service.desc}</p>
@@ -234,11 +241,11 @@ const Services = () => {
               </motion.div>
             );
           })}
-        </motion.div>
+        </motion.div>)}
       </section>
 
       {/* WHY PARTNER WITH US */}
-      <section className="section-space px-6 md:px-12 max-w-7xl mx-auto border-t border-gray-200">
+      <section data-scroll-line className="section-space px-6 md:px-12 max-w-7xl mx-auto border-t border-gray-200">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -249,9 +256,10 @@ const Services = () => {
           <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-gray-500 mb-2">Why Partner With Us</p>
           <h2 className="text-2xl md:text-4xl font-sora font-bold text-brand-green">Logistics that works as hard as you do.</h2>
         </motion.div>
+        {small ? <ResponsiveCarousel items={pillars} label="Service benefits" theme="green" /> : (
         <motion.div {...staggerContainer(0.12)} className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {pillars.map((p, i) => (
-            <motion.div key={i} variants={staggerItem} className="bg-white p-8 border border-gray-200 rounded-lg">
+            <motion.div data-scroll-hub key={i} variants={staggerItem} className="bg-white p-8 border border-gray-200 rounded-lg">
               <div className="w-12 h-12 bg-gray-50 rounded-md flex items-center justify-center mb-4 text-brand-green">
                 <p.icon className="w-6 h-6" />
               </div>
@@ -259,7 +267,7 @@ const Services = () => {
               <p className="text-base text-gray-600 leading-relaxed">{p.desc}</p>
             </motion.div>
           ))}
-        </motion.div>
+        </motion.div>)}
       </section>
 
       <section id="customs-forms" className="section-space px-6 md:px-12 max-w-7xl mx-auto scroll-mt-24 border-t border-gray-200">
@@ -309,12 +317,12 @@ const Services = () => {
           </motion.div>
 
           <p aria-live="polite" className="text-sm font-semibold text-gray-600 mb-4">
-            {filteredForms.length} of {customForms.length} forms
+            {small && !allForms && !search ? Math.min(4, filteredForms.length) : filteredForms.length} of {customForms.length} forms
           </p>
 
           {filteredForms.length > 0 ? (
             <motion.div key={search} {...staggerContainer(0.02)} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {filteredForms.map((form) => {
+              {(small && !allForms && !search ? filteredForms.slice(0, 4) : filteredForms).map((form) => {
                 const { Icon, tint } = getFormMeta(form.file);
                 return (
                   <motion.a
@@ -347,6 +355,8 @@ const Services = () => {
             </div>
           )}
         </div>
+
+        {small && !search && customForms.length > 4 && <button type="button" className="forms-expand" aria-expanded={allForms} onClick={() => setAllForms(value => !value)}>{allForms ? 'Show fewer forms' : `View all ${customForms.length} forms`}</button>}
 
         <div className="mt-16 md:mt-24 -mx-6 md:-mx-12">
           <DeliveryProcess

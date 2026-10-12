@@ -71,14 +71,16 @@ const LocationMarker = ({ branch }) => {
 
   useEffect(() => {
     if (!pulseRef.current) return undefined;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const tween = gsap.to(pulseRef.current, {
-      scale: 3.2,
-      opacity: 0,
-      duration: 1.8,
-      repeat: -1,
-      ease: 'power1.out',
+      scale: 3.2, opacity: 0, duration: 1.8, repeat: -1, ease: 'power1.out', paused: true,
     });
-    return () => tween.kill();
+    let visible = false;
+    const update = () => { if (visible && !document.hidden) tween.play(); else tween.pause(); };
+    const observer = new IntersectionObserver(entries => { visible = entries[0].isIntersecting; update(); });
+    document.addEventListener('visibilitychange', update);
+    observer.observe(pulseRef.current);
+    return () => { observer.disconnect(); document.removeEventListener('visibilitychange', update); tween.kill(); };
   }, []);
 
   const isEdgeLeft = branch.class === 'kerala';
@@ -113,24 +115,22 @@ const LocationMarker = ({ branch }) => {
 };
 
 const BranchesSection = () => {
+  const sectionRef = useRef(null);
   useEffect(() => {
-    gsap.utils.toArray('.branch-animate').forEach((el) => {
-      gsap.fromTo(
-        el,
-        { opacity: 0, y: 50 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 1,
-          ease: 'power2.out',
-          scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none reverse' },
-        }
-      );
-    });
+    const context = gsap.context(() => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      gsap.utils.toArray('.branch-animate:not(h2)').forEach(el => {
+        gsap.fromTo(el, { opacity: 0, y: 28 }, {
+          opacity: 1, y: 0, duration: 0.65, ease: 'power2.out',
+          scrollTrigger: { trigger: el, start: 'top 92%', once: true },
+        });
+      });
+    }, sectionRef);
+    return () => context.revert();
   }, []);
 
   return (
-    <section className="relative section-space bg-white px-6 md:px-12 overflow-hidden">
+    <section ref={sectionRef} className="branch-section relative section-space bg-white px-6 md:px-12 overflow-hidden">
       <div
         className="absolute inset-0 opacity-[0.1] pointer-events-none"
         style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll', filter: 'invert(1)' }}
@@ -142,7 +142,7 @@ const BranchesSection = () => {
 
         <div className="flex flex-col lg:flex-row gap-10 lg:gap-8 items-stretch">
           <div className="w-full lg:w-3/5 branch-animate  p-4 md:p-8">
-            <div className="relative w-full aspect-square max-w-lg mx-auto">
+            <div data-scroll-map className="relative w-full aspect-square max-w-lg mx-auto">
               <img src="/india.webp" alt="India Map" className="w-full h-full object-contain" />
               {branchData.map((branch, index) => (
                 <LocationMarker key={index} branch={branch} />

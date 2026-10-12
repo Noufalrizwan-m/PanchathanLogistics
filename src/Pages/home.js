@@ -11,15 +11,18 @@ import GlassButton from '../Components/ui/GlassButton';
 import SectionHeading from '../Components/ui/SectionHeading';
 import MarqueeStrip from '../Components/ui/MarqueeStrip';
 import SEO from '../Components/SEO';
+import ResponsiveCarousel from '../Components/ResponsiveCarousel';
 import { shipmentRequest } from '../lib/shipmentApi';
 import useHeroScroll from '../lib/useHeroScroll';
+import { inspectAwb } from '../lib/awbFormat';
+import AwbNumberField from '../Components/AwbNumberField';
 import { staggerContainer, staggerItem, fadeIn } from '../lib/motion';
 
 const whyChooseUs = [
-  { icon: Radar, title: 'Real-Time Tracking', desc: 'Live AWB status from pickup to delivery, no guesswork.' },
-  { icon: Network, title: 'Nationwide Network', desc: 'Branches across 7 states, connected to every major hub.' },
-  { icon: Headphones, title: 'Dedicated Support', desc: '24/7 assistance for every shipment, every question.' },
-  { icon: FileCheck2, title: 'Customs Expertise', desc: 'In-house CHA services for fast, compliant clearance.' },
+  { icon: Radar, title: 'Real-Time Tracking', compactTitle: 'Live Tracking', compactDesc: 'Live AWB updates', desc: 'Live AWB status from pickup to delivery, no guesswork.' },
+  { icon: Network, title: 'Nationwide Network', compactTitle: 'Nationwide Network', compactDesc: 'Across 7 states', desc: 'Branches across 7 states, connected to every major hub.' },
+  { icon: Headphones, title: 'Dedicated Support', compactTitle: 'Dedicated Support', compactDesc: '24/7 assistance', desc: '24/7 assistance for every shipment, every question.' },
+  { icon: FileCheck2, title: 'Customs Expertise', compactTitle: 'Customs Expertise', compactDesc: 'In-house clearance', desc: 'In-house CHA services for fast, compliant clearance.' },
 ];
 
 const heroFloatingBadges = [
@@ -30,7 +33,7 @@ const heroFloatingBadges = [
 ];
 
 const partners = [
-  'Jasmin Infotech', 'NES', 'Innovative Precision Castings', 'SMFG', 'TTS',
+  'Jasmin Infotech', 'NES', 'Innovative Precision Castings', 'SMFG', 'Tint Tone and Shade',
   'Mootek Technologies', 'iTech Service', 'Infinity & Beyond', 'VES', 'YRM Industries',
 ];
 
@@ -93,6 +96,8 @@ function Home() {
   const heroHeadingRef = useRef(null);
   const heroSectionRef = useRef(null);
   useHeroScroll(heroSectionRef);
+  const heroVisible = useInView(heroSectionRef, { amount: 0.05 });
+  const reducedMotion = useReducedMotion();
   const serviceTitleRef = useRef(null);
   const searchBoxRef = useRef(null);
   const searchTokenRef = useRef(0);
@@ -102,7 +107,9 @@ function Home() {
   const coreCapLeftRef = useRef(null);
   const whyChooseSectionRef = useRef(null);
 
-  const [awb, setAwb] = useState("");
+  const [awb, setAwb] = useState("PL786");
+  const awbFormat = inspectAwb(awb);
+  const hasAwbSuffix = awbFormat.normalized.length > 5;
   const [pincode, setPincode] = useState("");
   const [pincodeResult, setPincodeResult] = useState(null);
   const [awbResult, setAwbResult] = useState(null);
@@ -149,6 +156,7 @@ function Home() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       if (heroHeadingRef.current) {
         splitText(heroHeadingRef.current);
         const heroChars = heroHeadingRef.current.querySelectorAll(".char-split");
@@ -192,7 +200,8 @@ function Home() {
             scrollTrigger: {
               trigger: el,
               start: "top 90%",
-              toggleActions: "play none none reverse",
+              toggleActions: "play none none none",
+              once: true,
             },
           }
         );
@@ -211,11 +220,12 @@ function Home() {
   }, []);
 
   useEffect(() => {
+    if (!heroVisible || reducedMotion) return;
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % greetings.length);
     }, 2500);
     return () => clearInterval(interval);
-  }, [greetings.length]);
+  }, [greetings.length, heroVisible, reducedMotion]);
   useEffect(() => {
     // Stop the browser from restoring the old scroll position on refresh
     if ('scrollRestoration' in window.history) {
@@ -223,15 +233,20 @@ function Home() {
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, []);
-  // Start third-party reviews only as their existing section approaches the viewport.
+  // Preload responsive reviews; preserve desktop's existing deferred loading.
   useEffect(() => {
-    const container = document.querySelector('.elfsight-app-93fa4f00-4cbe-433a-89d1-82d27c88dc71');
     const load = () => {
       if (document.querySelector('script[src="https://elfsightcdn.com/platform.js"]')) return;
       const script = document.createElement('script');
-      script.src = 'https://elfsightcdn.com/platform.js'; script.async = true;
+      script.src = 'https://elfsightcdn.com/platform.js';
+      script.async = true;
       document.body.appendChild(script);
     };
+    if (window.matchMedia('(max-width: 1023px)').matches) {
+      load();
+      return;
+    }
+    const container = document.querySelector('.client-reviews');
     if (!container) return;
     if (!window.IntersectionObserver) { load(); return; }
     const observer = new IntersectionObserver(entries => {
@@ -277,12 +292,13 @@ function Home() {
   const handleSearch = (e) => {
     e.preventDefault();
 
-    if (awb.trim() !== "") {
+    if (hasAwbSuffix && !awbFormat.complete) return;
+    if (awbFormat.complete) {
       setPincode("");
       setPincodeResult(null);
-      handleAwbSearch(awb.trim());
+      handleAwbSearch(awbFormat.normalized);
     } else if (pincode.trim() !== "") {
-      setAwb("");
+      setAwb("PL786");
       setAwbResult(null);
       handlePincodeCheck(pincode.trim());
     }
@@ -318,10 +334,11 @@ function Home() {
   return (
     <>
       <SEO path="/" />
+      <div className="responsive-home">
       {/* HERO -> TAILORED EXPERTISE */}
       <div className="relative">
         {/* HERO */}
-        <section ref={heroSectionRef} className="relative z-10 -mt-24 md:-mt-28 pt-32 md:pt-40 pb-32 md:pb-36 px-4 md:px-8 overflow-hidden min-h-screen flex items-center">
+        <section ref={heroSectionRef} className="home-hero relative z-10 -mt-24 md:-mt-28 pt-32 md:pt-40 pb-32 md:pb-36 px-4 md:px-8 overflow-hidden min-h-screen flex items-center">
           {heroFloatingBadges.map((badge, i) => (
             <motion.div
               key={badge.label}
@@ -369,12 +386,13 @@ function Home() {
 
               <div className="relative flex items-center gap-2 px-4 py-3 w-full md:flex-1 min-w-0">
                 <Hash className="text-brand-green w-5 h-5 flex-shrink-0" />
-                <input
-                  type="text"
+                <AwbNumberField
                   value={awb}
-                  onChange={(e) => setAwb(e.target.value)}
-                  placeholder="AWB number"
-                  aria-label="AWB number" maxLength={80}
+                  onChange={setAwb}
+                  id="home-awb"
+                  aria-label="AWB remaining number"
+                  aria-invalid={Boolean(hasAwbSuffix && awbFormat.error)}
+                  aria-describedby={hasAwbSuffix && awbFormat.error ? 'home-awb-help' : undefined}
                   className="bg-transparent outline-none flex-1 min-w-0 text-base text-gray-800 placeholder-gray-500"
                 />
               </div>
@@ -398,10 +416,10 @@ function Home() {
               <motion.button
                 type="submit"
                 aria-label="Search shipment or delivery area"
-                disabled={loading || (!awb.trim() && !pincode.trim())}
+                disabled={loading || (!awbFormat.complete && !pincode.trim()) || (hasAwbSuffix && !awbFormat.complete)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`relative shrink-0 rounded-2xl md:rounded-full transition-all duration-300 flex items-center justify-center gap-2 py-3 px-6 md:px-5 md:w-14 md:h-14 ${(!awb.trim() && !pincode.trim())
+                className={`relative shrink-0 rounded-2xl md:rounded-full transition-all duration-300 flex items-center justify-center gap-2 py-3 px-6 md:px-5 md:w-14 md:h-14 ${((!awbFormat.complete && !pincode.trim()) || (hasAwbSuffix && !awbFormat.complete))
                   ? 'bg-brand-green/25 text-white/70 cursor-not-allowed'
                   : 'bg-brand-green text-white hover:brightness-110 shadow-md'
                   }`}
@@ -410,6 +428,7 @@ function Home() {
                 <span className="md:hidden">Search</span>
               </motion.button>
             </motion.form>
+            <p id="home-awb-help" aria-live="polite" className={`text-sm text-amber-800 font-semibold max-w-lg ${hasAwbSuffix && awbFormat.error ? 'mt-3' : ''}`}>{hasAwbSuffix && awbFormat.error ? awbFormat.error : null}</p>
 
             <AnimatePresence>
               {loading && (
@@ -470,7 +489,7 @@ function Home() {
         </section>
 
         {/* TRUST PILLARS */}
-        <section className="relative z-10 section-space px-4 md:px-6 bg-white scroll-mt-24 md:scroll-mt-28 overflow-hidden">
+        <section className="home-trust relative z-10 section-space px-4 md:px-6 bg-white scroll-mt-24 md:scroll-mt-28 overflow-hidden">
           <div
             className="absolute inset-0 opacity-[0.1] pointer-events-none"
             style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll', filter: 'invert(1)' }}
@@ -505,7 +524,7 @@ function Home() {
                 Only we connect you directly to real-time visibility of your shipment - GPS verified fleets, digital docs, and insured cargo, from pickup to delivery.
               </motion.p>
 
-              <div className="flex items-center gap-3 mt-8">
+              <div className="hidden lg:flex items-center gap-3 mt-8">
                 {[Truck, Package, Warehouse].map((Icon, i) => (
                   <div key={i} className="w-11 h-11 rounded-full bg-brand-green text-white border-2 border-white shadow-md flex items-center justify-center -ml-3 first:ml-0">
                     <Icon className="w-5 h-5" />
@@ -577,7 +596,7 @@ function Home() {
         </section>
 
         {/* TAILORED EXPERTISE */}
-        <section ref={coreCapSectionRef} className="relative z-10 section-space lg:py-10 px-4 md:px-6">
+        <section ref={coreCapSectionRef} className="home-capabilities relative z-10 section-space lg:py-10 px-4 md:px-6">
           <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
             <div ref={coreCapLeftRef} className="lg:sticky lg:top-28 lg:self-start">
               <SectionHeading
@@ -589,7 +608,8 @@ function Home() {
               />
             </div>
 
-            <motion.div {...staggerContainer(0.15)} className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-col gap-6 lg:gap-10 lg:py-10">
+            <ResponsiveCarousel items={specializedServices} label="Industry expertise" />
+            <motion.div {...staggerContainer(0.15)} className="hidden lg:flex lg:flex-col gap-6 lg:gap-10 lg:py-10">
               {specializedServices.map((service, i) => (
                 <GlassCard key={i} as="div" variants={staggerItem} className="p-6 md:p-8">
                   <div className="w-12 h-12 rounded-2xl bg-brand-green text-white flex items-center justify-center mb-5">
@@ -606,7 +626,7 @@ function Home() {
       {/* end scroll-truck wrapper */}
 
       {/* WHY CHOOSE US */}
-      <section ref={whyChooseSectionRef} className="relative section-space bg-white px-4 md:px-6 overflow-hidden">
+      <section ref={whyChooseSectionRef} className="home-why relative section-space bg-white px-4 md:px-6 overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.1] pointer-events-none"
           style={{ backgroundImage: "url('/homebg-420.webp')", backgroundSize: '420px', backgroundRepeat: 'repeat', backgroundAttachment: 'scroll', filter: 'invert(1)' }}
@@ -617,7 +637,16 @@ function Home() {
             title="Why Choose Us for Your Shipment"
             subtitle="Moving India's cargo since 2019, with real infrastructure, real accountability, and real people on the line, every time."
           />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-10">
+          <div className="why-benefits-grid lg:hidden" data-scroll-benefits>
+            {whyChooseUs.map(item => (
+              <article className="why-benefit-tile" key={item.title}>
+                <span className="why-benefit-icon"><item.icon size={22} aria-hidden="true" /></span>
+                <h3>{item.compactTitle}</h3>
+                <p>{item.compactDesc}</p>
+              </article>
+            ))}
+          </div>
+          <div className="hidden lg:grid lg:grid-cols-4 gap-5 mt-10">
             {whyChooseUs.map((item, i) => (
               <motion.div
                 key={i}
@@ -640,11 +669,12 @@ function Home() {
       </section>
 
       {/* QUICK SERVICE ACCESS */}
-      <section className="section-space  px-4 md:px-6">
+      <section className="home-quick section-space px-4 md:px-6">
         <div className="max-w-6xl mx-auto">
           <SectionHeading eyebrow="Explore" title="Quick Service Access" />
 
-          <motion.div {...staggerContainer(0.15)} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <ResponsiveCarousel items={serviceShortcuts} label="Quick services" />
+          <motion.div {...staggerContainer(0.15)} className="hidden lg:grid lg:grid-cols-4 gap-6">
             {serviceShortcuts.map((service, i) => (
               <GlassCard
                 key={i}
@@ -684,10 +714,12 @@ function Home() {
       <section className="relative z-10 section-space px-4 md:px-6">
         <div className="max-w-4xl mx-auto">
           <SectionHeading eyebrow="Client Reviews" title="What Our Clients Say" subtitle="Real feedback from real clients, straight from Google." />
-          <div className="elfsight-app-93fa4f00-4cbe-433a-89d1-82d27c88dc71" data-elfsight-app-lazy></div>
+          <div className="elfsight-app-93fa4f00-4cbe-433a-89d1-82d27c88dc71 client-reviews" data-elfsight-app-lazy={window.matchMedia('(min-width: 1024px)').matches ? '' : undefined}></div>
+
         </div>
       </section>
 
+      </div>
       <AnimatePresence>
         {resultModalOpen && (
           <motion.div
