@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { parsePhoneNumberFromString } from 'libphonenumber-js/max';
+import { emailError } from './emailFormat';
 
 const services = ['Asset Management', 'Air Freight', 'Domestic Surface', 'Warehousing', 'International Export', 'General Inquiry'];
 const emptyForm = { name: '', email: '', phone: '', phoneCountry: 'IN', service: '', origin: '', destination: '', weight: '', pickupDate: '', message: '', website: '' };
@@ -24,6 +25,12 @@ export default function useInquiryForm() {
   const submit = async event => {
     event.preventDefault();
     if (inFlight.current) return;
+    const emailIssue = emailError(form.email);
+    if (emailIssue) {
+      setError(emailIssue); setStatus('error');
+      document.getElementById('inquiry-email')?.focus();
+      return;
+    }
     if (!services.includes(form.service)) {
       setError('Please choose a service.'); setStatus('error'); return;
     }
@@ -41,7 +48,7 @@ export default function useInquiryForm() {
     try {
       const response = await fetch(process.env.REACT_APP_INQUIRY_ENDPOINT || '/api/inquiry', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, phone: phone.number, submissionId: submission.current }), signal: controller.signal,
+        body: JSON.stringify({ ...form, email: form.email.trim().toLowerCase(), phone: phone.number, submissionId: submission.current }), signal: controller.signal,
       });
       const data = await response.json();
       if (!response.ok || !data.success || !data.reference) throw new Error(data.message || 'Your enquiry could not be sent. Please try again or contact our team directly.');

@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import SEO from '../Components/SEO';
 import EnquirySuccessDialog from '../Components/EnquirySuccessDialog';
 import PhoneNumberField from '../Components/PhoneNumberField';
+import EmailField from '../Components/EmailField';
 import SelectMenu from '../Components/SelectMenu';
 import PrivacyNotice from '../Components/PrivacyNotice';
 import CompactHubs from '../Components/CompactHubs';
@@ -137,10 +138,8 @@ const Contact = () => {
                       <label htmlFor="inquiry-name" className="text-sm font-bold uppercase tracking-wider text-gray-500">Full Name *</label>
                       <input id="inquiry-name" name="name" autoComplete="name" maxLength={120} type="text" placeholder="John Doe" required disabled={status === 'loading'} value={form.name} onChange={handleChange('name')} className={inputClass} />
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <label htmlFor="inquiry-email" className="text-sm font-bold uppercase tracking-wider text-gray-500">Work Email *</label>
-                      <input id="inquiry-email" name="email" autoComplete="email" maxLength={254} type="email" placeholder="john@company.com" required disabled={status === 'loading'} value={form.email} onChange={handleChange('email')} className={inputClass} />
-                    </div>
+                    <EmailField value={form.email} onChange={email => update({ target: { name: 'email', value: email } })}
+                      disabled={status === 'loading'} inputClass={inputClass} />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <PhoneNumberField value={form.phone} country={form.phoneCountry}

@@ -5,7 +5,7 @@ jest.mock('react-router-dom', () => ({
   useSearchParams: () => [new URLSearchParams()],
   useNavigate: () => mockNavigate,
 }), { virtual: true });
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import Contact from './Pages/contactus';
@@ -199,4 +199,36 @@ test('an enquiry can be submitted without a message',async()=>{
   fireEvent.click(screen.getByRole('button',{name:/Submit Enquiry/i}));
   expect(await screen.findByRole('dialog',{name:'Enquiry sent'})).toBeInTheDocument();
   expect(JSON.parse(global.fetch.mock.calls[0][1].body).message).toBe('');
+});
+
+test('email provides live completion feedback and clears it when corrected', () => {
+  mount();
+  const email = screen.getByLabelText(/Work Email/i);
+  fireEvent.blur(email);
+  expect(screen.getByText('Please enter your email address.')).toBeInTheDocument();
+  expect(email).toHaveAttribute('aria-invalid', 'true');
+  for (const value of ['john', 'john@', 'john@company', 'john@company.']) {
+    fireEvent.change(email, { target: { value } });
+    expect(screen.getByText(/Please finish your email address/)).toBeInTheDocument();
+    expect(email).toHaveAttribute('aria-invalid', 'true');
+  }
+  fireEvent.change(email, { target: { value: 'John+Sales@Company.COM' } });
+  expect(email).toHaveValue('john+sales@company.com');
+  expect(email).toHaveAttribute('aria-invalid', 'false');
+  expect(screen.getByText('Email format looks correct.')).toBeInTheDocument();
+  expect(email.checkValidity()).toBe(true);
+});
+
+test('an invalid email blocks submission even when native browser validation is bypassed', () => {
+  global.fetch = jest.fn();
+  mount(); completeForm();
+  const email = screen.getByLabelText(/Work Email/i);
+  fireEvent.change(email, { target: { value: 'john@company..com' } });
+  let valid;
+  act(() => { valid = email.checkValidity(); });
+  expect(valid).toBe(false);
+  fireEvent.submit(email.closest('form'));
+  expect(global.fetch).not.toHaveBeenCalled();
+  expect(email).toHaveFocus();
+  expect(screen.getByRole('alert')).toHaveTextContent(/Please check your email address/);
 });
