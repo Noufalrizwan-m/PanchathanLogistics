@@ -4,6 +4,7 @@ import { Facebook, Linkedin, Instagram } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeUp } from '../lib/motion';
 import PrivacyNotice from './PrivacyNotice';
+import { business } from '../lib/business';
 
 const quickLinks = [
   { name: 'About Us', path: '/about' },
@@ -72,9 +73,7 @@ const Footer = () => (
             <div className="min-w-0">
               <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider sm:tracking-widest text-brand-amber mb-3 lg:mb-4">Head Office</h2>
               <address className="not-italic text-sm text-white/85 leading-relaxed">
-                Plot No. 65, Annai Therasa Street,<br />
-                V.O.C. Nagar, Pammal,<br />
-                Chennai, Tamil Nadu 600075
+                {business.addressLines.map(line => <span className="block" key={line}>{line}</span>)}
               </address>
             </div>
             <div className="min-w-0">

@@ -1,4 +1,5 @@
 import customForms from './customForms.mjs';
+import { business as company } from './businessData.mjs';
 
 // Shared by the React pages and the production HTML generator.
 const SITE_URL = 'https://panchathanlogistics.com';
@@ -41,7 +42,7 @@ const business = {
   '@type': 'LocalBusiness', '@id': BUSINESS_ID, name: SITE_NAME,
   url: `${SITE_URL}/`, image: `${SITE_URL}/logo-480.webp`, logo: `${SITE_URL}/logo-480.webp`,
   description: pages['/'].description, telephone: '+91-73394-33590', email: 'info@panchathanlogistics.com', foundingDate: '2019',
-  address: { '@type': 'PostalAddress', streetAddress: 'Plot No. 65, Annai Therasa Street, V.O.C. Nagar, Pammal', addressLocality: 'Chennai', addressRegion: 'Tamil Nadu', postalCode: '600075', addressCountry: 'IN' },
+  address: { '@type': 'PostalAddress', ...company.postalAddress },
   areaServed: [{ '@type': 'City', name: 'Chennai' }, { '@type': 'State', name: 'Tamil Nadu' }, { '@type': 'Country', name: 'India' }],
   openingHoursSpecification: { '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], opens: '10:00', closes: '19:30' },
   sameAs: ['https://www.facebook.com/profile.php?id=100066693142443', 'https://www.instagram.com/panchathan_logistics/', 'https://www.linkedin.com/company/panchathan-logistics-pvt-ltd/'],

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { fadeUp, staggerContainer, staggerItem } from '../lib/motion';
 import { Link } from 'react-router-dom';
 import GlassButton from './ui/GlassButton';
+import { business } from '../lib/business';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -18,7 +19,7 @@ const branchData = [
   },
   {
     name: 'TAMIL NADU (CHENNAI)',
-    details: 'Head Quaters, Plot. No. 65, Annai Therasa Street,\nV.O.C. Nagar, Pammal\nCHENNAI, Tamil Nadu - 600075',
+    details: business.address,
     class: 'tamilnadu',
     top: 90,
     left: 35,
