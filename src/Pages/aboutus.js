@@ -87,8 +87,8 @@ const About = () => {
             >
               <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-lg  overflow-hidden flex-shrink-0">
                 <img
-                  data-scroll-photo src="/ceo-288.webp"
-                  width="288" height="230"
+                  src="/ceo-portrait-288.webp"
+                  width="288" height="288"
                   alt="Mohammed Jaffar Bin Azeez Basha, founder and CEO"
                   className="w-full h-full object-cover object-center"
                 />
