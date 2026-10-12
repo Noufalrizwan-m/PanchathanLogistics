@@ -6,6 +6,8 @@ import Services from './services';
 
 beforeAll(() => {
   window.matchMedia = query => ({ matches: query.includes('max-width') || query.includes('prefers-reduced-motion'), addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+  window.scrollTo = jest.fn();
+  window.scrollBy = jest.fn();
   global.IntersectionObserver = class { observe() {} unobserve() {} disconnect() {} };
 });
 
@@ -21,7 +23,9 @@ test('expanding mobile customs forms makes every download immediately visible', 
   }
   const toggle = screen.getByRole('button', { name: 'Show fewer forms' });
   expect(toggle).toHaveAttribute('aria-controls', 'customs-form-list');
-  expect(toggle.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(list.children[4]).toHaveFocus();
+  expect(toggle.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
   fireEvent.click(toggle);
   expect(list.querySelectorAll('a[download]')).toHaveLength(4);
+  expect(toggle).toHaveFocus();
 });

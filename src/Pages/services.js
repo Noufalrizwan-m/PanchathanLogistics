@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DeliveryProcess from '../Components/DeliveryProcess';
 import CompactServices from '../Components/CompactServices';
@@ -89,6 +89,25 @@ const Services = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [allForms, setAllForms] = useState(false);
+  const formsList = useRef(null);
+  const formsAction = useRef(null);
+  const toggleForms = event => {
+    formsAction.current = { opening: !allForms, scrollY: window.scrollY, button: event.currentTarget, top: event.currentTarget.getBoundingClientRect().top };
+    setAllForms(value => !value);
+  };
+  useLayoutEffect(() => {
+    const action = formsAction.current;
+    if (!action) return;
+    if (action.opening) {
+      formsList.current?.children[4]?.focus({ preventScroll: true });
+      window.scrollTo({ top: action.scrollY, behavior: 'instant' });
+    } else {
+      const shift = action.button.getBoundingClientRect().top - action.top;
+      if (Math.abs(shift) > 1) window.scrollBy({ top: shift, behavior: 'instant' });
+      action.button.focus({ preventScroll: true });
+    }
+    formsAction.current = null;
+  }, [allForms]);
   const small = useSmallScreen();
 
   const filteredForms = useMemo(() => {
@@ -320,13 +339,8 @@ const Services = () => {
             {small && !allForms && !search ? Math.min(4, filteredForms.length) : filteredForms.length} of {customForms.length} forms
           </p>
 
-          {small && !search && customForms.length > 4 && (
-            <button type="button" className="forms-expand mb-4" aria-expanded={allForms} aria-controls="customs-form-list"
-              onClick={() => setAllForms(value => !value)}>{allForms ? 'Show fewer forms' : `View all ${customForms.length} forms`}</button>
-          )}
-
           {filteredForms.length > 0 ? (
-            <div id="customs-form-list" className="forms-download-list grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div ref={formsList} id="customs-form-list" className="forms-download-list grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {(small && !allForms && !search ? filteredForms.slice(0, 4) : filteredForms).map((form) => {
                 const { Icon, tint } = getFormMeta(form.file);
                 return (
@@ -356,6 +370,11 @@ const Services = () => {
               <p className="text-sm text-gray-500 mt-1">Try a different keyword, or clear the search.</p>
             </div>
           )}
+          {small && !search && customForms.length > 4 && (
+            <button type="button" className="forms-expand" aria-expanded={allForms} aria-controls="customs-form-list"
+              onClick={toggleForms}>{allForms ? 'Show fewer forms' : `View all ${customForms.length} forms`}</button>
+          )}
+
         </div>
 
 
