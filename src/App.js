@@ -19,28 +19,28 @@ import Contact from '../src/Pages/contactus';
 function ScrollToTop() {
   const { pathname, hash, key } = useLocation();
   useLayoutEffect(() => {
-    if (hash) {
-      let target = hash.slice(1);
-      try { target = decodeURIComponent(target); } catch (_) { /* Keep malformed fragments harmless. */ }
-      const frame = requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView());
-      return () => cancelAnimationFrame(frame);
-    } else window.scrollTo({ top: 0, behavior: 'instant' });
+    let frame;
+    const align = () => {
+      if (hash) {
+        let id = hash.slice(1);
+        try { id = decodeURIComponent(id); } catch (_) { /* Keep malformed fragments harmless. */ }
+        const target = document.getElementById(id);
+        if (!target) return;
+        const clearance = parseFloat(getComputedStyle(target).scrollMarginTop) || parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 96;
+        window.scrollTo({ top: Math.max(0, target.getBoundingClientRect().top + window.scrollY - clearance), left: 0, behavior: 'instant' });
+      } else window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    };
+    align();
+    // Finish alignment after route effects and scroll-animation cleanup have
+    // settled. Local tabs don't change the location, so they keep their position.
+    frame = requestAnimationFrame(() => {
+      align();
+      frame = requestAnimationFrame(align);
+    });
+    return () => cancelAnimationFrame(frame);
   }, [pathname, hash, key]);
   useEffect(() => {
-    let frame;
-    const reset = () => {
-      if (window.location.hash) return;
-      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        frame = requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }));
-      });
-    };
-    reset();
-    window.addEventListener('load', reset);
-    window.addEventListener('pageshow', reset);
-    window.addEventListener('beforeunload', reset);
-    return () => { cancelAnimationFrame(frame); window.removeEventListener('load', reset); window.removeEventListener('pageshow', reset); window.removeEventListener('beforeunload', reset); };
+    if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
   }, []);
   return null;
 }

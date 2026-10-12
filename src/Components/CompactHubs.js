@@ -7,7 +7,16 @@ export default function CompactHubs({ branches }) {
   const branch = branches[selected];
   const select = (index, focus = false) => {
     setSelected(index);
-    if (focus) document.getElementById(`hub-tab-${index}`)?.focus();
+    if (focus) {
+      const tab = document.getElementById(`hub-tab-${index}`);
+      tab?.focus({ preventScroll: true });
+      const strip = tab?.parentElement;
+      if (strip && tab) {
+        const bounds = strip.getBoundingClientRect(), item = tab.getBoundingClientRect();
+        if (item.left < bounds.left) strip.scrollLeft -= bounds.left - item.left;
+        else if (item.right > bounds.right) strip.scrollLeft += item.right - bounds.right;
+      }
+    }
   };
   return <div className="compact-hubs">
     <div className="hub-tabs" role="tablist" aria-label="Regional hubs">

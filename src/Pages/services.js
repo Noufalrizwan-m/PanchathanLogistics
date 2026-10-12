@@ -320,18 +320,20 @@ const Services = () => {
             {small && !allForms && !search ? Math.min(4, filteredForms.length) : filteredForms.length} of {customForms.length} forms
           </p>
 
+          {small && !search && customForms.length > 4 && (
+            <button type="button" className="forms-expand mb-4" aria-expanded={allForms} aria-controls="customs-form-list"
+              onClick={() => setAllForms(value => !value)}>{allForms ? 'Show fewer forms' : `View all ${customForms.length} forms`}</button>
+          )}
+
           {filteredForms.length > 0 ? (
-            <motion.div key={search} {...staggerContainer(0.02)} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div id="customs-form-list" className="forms-download-list grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {(small && !allForms && !search ? filteredForms.slice(0, 4) : filteredForms).map((form) => {
                 const { Icon, tint } = getFormMeta(form.file);
                 return (
-                  <motion.a
+                  <a
                     key={form.file}
-                    variants={staggerItem}
                     href={`/doc/${form.file}`}
                     download
-                    whileHover={{ y: -3 }}
-                    transition={{ type: "spring", stiffness: 350, damping: 24 }}
                     className="group flex items-center gap-3 bg-white border border-gray-200 rounded-lg p-3.5 hover:border-brand-green transition-colors"
                   >
                     <div className={`w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${tint}`}>
@@ -341,10 +343,10 @@ const Services = () => {
                       {form.name}<span className="block text-xs font-normal text-gray-600 mt-1">{form.file.endsWith("docx") ? "Word document" : "Excel spreadsheet"}</span>
                     </span>
                     <Download className="w-4 h-4 text-gray-300 group-hover:text-brand-amberDark flex-shrink-0 transition-colors" />
-                  </motion.a>
+                  </a>
                 );
               })}
-            </motion.div>
+            </div>
           ) : (
             <div className="flex flex-col items-center text-center py-14">
               <div className="w-14 h-14 rounded-lg bg-gray-100 text-gray-500 flex items-center justify-center mb-4">
@@ -356,7 +358,6 @@ const Services = () => {
           )}
         </div>
 
-        {small && !search && customForms.length > 4 && <button type="button" className="forms-expand" aria-expanded={allForms} onClick={() => setAllForms(value => !value)}>{allForms ? 'Show fewer forms' : `View all ${customForms.length} forms`}</button>}
 
         <div className="mt-16 md:mt-24 -mx-6 md:-mx-12">
           <DeliveryProcess

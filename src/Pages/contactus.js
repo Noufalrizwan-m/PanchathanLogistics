@@ -115,10 +115,10 @@ const Contact = () => {
 
           {/* Form */}
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
+            transition={{ duration: 0.3 }}
             className="order-1 lg:order-2 lg:col-span-8 bg-white rounded-xl shadow-lg p-6 md:p-8"
           >
             <h2 className="text-2xl md:text-3xl font-sora font-bold text-gray-900 mb-7">Get Your Personalised Quote</h2>

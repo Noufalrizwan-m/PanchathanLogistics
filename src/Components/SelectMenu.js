@@ -62,7 +62,14 @@ export default function SelectMenu({ id, labelId, label, value, options, onChang
   }, [open, position, searchable]);
 
   useEffect(() => {
-    if (open) document.getElementById(`${menuId}-${active}`)?.scrollIntoView?.({ block: 'nearest' });
+    if (!open || !list.current) return;
+    const option = document.getElementById(`${menuId}-${active}`);
+    if (!option) return;
+    const bounds = list.current.getBoundingClientRect();
+    const item = option.getBoundingClientRect();
+    // Scroll only the dropdown's own list, never the page behind it.
+    if (item.top < bounds.top) list.current.scrollTop -= bounds.top - item.top;
+    else if (item.bottom > bounds.bottom) list.current.scrollTop += item.bottom - bounds.bottom;
   }, [active, open, menuId, position]);
 
   const keyDown = event => {
