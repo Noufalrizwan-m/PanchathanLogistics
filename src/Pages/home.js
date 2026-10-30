@@ -125,7 +125,7 @@ function Home() {
     {
       title: "Asset Management",
       icon: PackageSearch,
-      desc: "IT asset management in Chennai for laptops, desktops, servers and business equipment, with shipment tracking and coordinated deliveries across India.",
+      desc: "From our Pammal, Chennai office, we coordinate IT asset logistics for laptops, desktops, servers and business equipment, with shipment tracking and deliveries across India.",
     },
     {
       title: "Banking & Financial Institutions",

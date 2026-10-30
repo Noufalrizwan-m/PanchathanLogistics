@@ -41,7 +41,7 @@ const bentoServices = [
     size: 'large',
     icon: PackageSearch,
     name: "Asset Management & Tracking",
-    desc: "IT asset management and logistics in Chennai for laptops, desktops, servers and office equipment, with shipment tracking and coordinated business deliveries.",
+    desc: "IT asset management and logistics from Pammal, Chennai for laptops, desktops, servers and office equipment, with shipment tracking and coordinated business deliveries.",
     bullets: ["Condition & custody monitoring", "Laptop, computer & IT equipment logistics"],
   },
   {

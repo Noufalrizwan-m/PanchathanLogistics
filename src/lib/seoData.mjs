@@ -8,11 +8,11 @@ const BUSINESS_ID = `${SITE_URL}/#business`;
 const pages = {
   '/': {
     title: 'IT Asset Management & Logistics Chennai | Panchathan Logistics',
-    description: 'IT asset management and laptop logistics in Chennai. Panchathan Logistics handles laptops, desktops, servers, courier and cargo shipments across India.',
+    description: 'Logistics and IT asset management from Pammal, Chennai. Panchathan Logistics handles laptop, desktop, server, courier and cargo shipments across India.',
   },
   '/services': {
-    title: 'IT Asset Logistics & Customs Forms Chennai | Panchathan Logistics',
-    description: 'IT asset management in Chennai and downloadable customs forms: commercial invoice, packing list, KYC, authorisation letter and export declarations.',
+    title: 'IT Asset Management & Logistics Services Chennai | Panchathan Logistics',
+    description: 'IT asset management and logistics in Chennai for laptops, desktops, servers and business equipment, plus courier, cargo and customs support from Pammal.',
   },
   '/about': {
     title: 'Chennai Logistics & IT Asset Team | Panchathan Logistics',
