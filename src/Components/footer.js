@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Facebook, Linkedin, Instagram } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeUp } from '../lib/motion';
-import PrivacyNotice from './PrivacyNotice';
 import { business } from '../lib/business';
 
 const quickLinks = [
@@ -108,7 +107,7 @@ const Footer = () => (
       </div>
 
       <p className="text-center text-xs text-white/80 pt-6 lg:pt-8">
-        © {new Date().getFullYear()} Panchathan Logistics. All rights reserved. <PrivacyNotice className="inline-flex min-h-11 items-center underline ml-2">Enquiry privacy</PrivacyNotice>
+        © {new Date().getFullYear()} Panchathan Logistics. All rights reserved. <Link to="/privacy" className="inline-flex min-h-11 items-center underline ml-2">Enquiry privacy</Link>
       </p>
     </motion.div>
   </footer>

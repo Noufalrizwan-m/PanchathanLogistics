@@ -11,6 +11,7 @@ import GlassButton from '../Components/ui/GlassButton';
 import SectionHeading from '../Components/ui/SectionHeading';
 import MarqueeStrip from '../Components/ui/MarqueeStrip';
 import SEO from '../Components/SEO';
+import GoogleReviews from '../Components/GoogleReviews';
 import ResponsiveCarousel from '../Components/ResponsiveCarousel';
 import { shipmentRequest } from '../lib/shipmentApi';
 import useHeroScroll from '../lib/useHeroScroll';
@@ -232,28 +233,6 @@ function Home() {
       window.history.scrollRestoration = 'manual';
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-  }, []);
-  // Preload responsive reviews; preserve desktop's existing deferred loading.
-  useEffect(() => {
-    const load = () => {
-      if (document.querySelector('script[src="https://elfsightcdn.com/platform.js"]')) return;
-      const script = document.createElement('script');
-      script.src = 'https://elfsightcdn.com/platform.js';
-      script.async = true;
-      document.body.appendChild(script);
-    };
-    if (window.matchMedia('(max-width: 1023px)').matches) {
-      load();
-      return;
-    }
-    const container = document.querySelector('.client-reviews');
-    if (!container) return;
-    if (!window.IntersectionObserver) { load(); return; }
-    const observer = new IntersectionObserver(entries => {
-      if (entries.some(entry => entry.isIntersecting)) { load(); observer.disconnect(); }
-    }, { rootMargin: '600px' });
-    observer.observe(container);
-    return () => observer.disconnect();
   }, []);
 
   // AWB & Pincode Search Logic (unchanged business logic)
@@ -714,7 +693,7 @@ function Home() {
       <section className="relative z-10 section-space px-4 md:px-6">
         <div className="max-w-4xl mx-auto">
           <SectionHeading eyebrow="Client Reviews" title="What Our Clients Say" subtitle="Real feedback from real clients, straight from Google." />
-          <div className="elfsight-app-93fa4f00-4cbe-433a-89d1-82d27c88dc71 client-reviews" data-elfsight-app-lazy={window.matchMedia('(min-width: 1024px)').matches ? '' : undefined}></div>
+          <GoogleReviews />
 
         </div>
       </section>

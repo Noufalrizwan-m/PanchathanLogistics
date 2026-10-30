@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { useEffect, useLayoutEffect } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import WarehouseLoader from './Components/WarehouseLoader';
+import ConnectionNotice from './Components/ConnectionNotice';
 
 // Import Components
 import Header from '../src/Components/header';
@@ -45,10 +47,27 @@ function ScrollToTop() {
   return null;
 }
 
+function RefreshPageToTop({ loading }) {
+  const introFinished = useRef(false);
+  useLayoutEffect(() => {
+    if (loading || introFinished.current) return;
+    introFinished.current = true;
+    const navigation = performance.getEntriesByType?.('navigation')[0];
+    if (navigation?.type !== 'reload') return;
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [loading]);
+  return null;
+}
+
 function App() {
+  const [loading, setLoading] = useState(true);
+  const finishLoading = useCallback(() => setLoading(false), []);
   return (
     <Router>
       <ScrollToTop />
+      <RefreshPageToTop loading={loading} />
+      {loading && <WarehouseLoader onComplete={finishLoading} />}
+      <div inert={loading} aria-hidden={loading ? true : undefined}>
       <MotionConfig reducedMotion="user">
       <a className="skip-link" href="#main-content">Skip to content</a>
       <div className="fixed inset-0 -z-10"><ShaderBackground /></div>
@@ -66,7 +85,9 @@ function App() {
       </main>
       <ResponsiveScrollEffects />
       <Footer />
+      <ConnectionNotice />
       </MotionConfig>
+      </div>
     </Router>
   );
 }

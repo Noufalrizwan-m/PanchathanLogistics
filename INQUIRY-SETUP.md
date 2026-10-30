@@ -11,7 +11,7 @@ The website sends enquiry details through its Node.js backend to both sales.panc
 
 Google instructions: https://support.google.com/accounts/answer/185833
 App Password page: https://myaccount.google.com/apppasswords
-
+ 
 ## Production
 
 Run the API on Node.js hosting that permits outbound SMTP over TLS to smtp.gmail.com:465. Put GMAIL_USER, GMAIL_APP_PASSWORD and INQUIRY_ALLOWED_ORIGINS in server environment settings. The frontend calls /api/inquiry; use the same-origin route/proxy or set REACT_APP_INQUIRY_ENDPOINT and the appropriate origin policy. A static-only host cannot execute the Node.js backend.

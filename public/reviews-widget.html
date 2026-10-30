@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Client reviews</title>
+  <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>html,body{margin:0;padding:0;background:transparent;overflow:hidden;font-family:'Titillium Web',sans-serif}</style>
+</head>
+<body>
+  <div id="reviews" class="elfsight-app-93fa4f00-4cbe-433a-89d1-82d27c88dc71"></div>
+  <script>
+    (function () {
+      var container = document.getElementById('reviews');
+      function reportHeight() {
+        var height = Math.ceil(container.getBoundingClientRect().height);
+        if (height >= 100) parent.postMessage({type:'panchathan-reviews-height',height:height}, location.origin);
+      }
+      if ('ResizeObserver' in window) new ResizeObserver(reportHeight).observe(container);
+      else {
+        window.addEventListener('resize', reportHeight);
+        new MutationObserver(reportHeight).observe(container, {childList:true,subtree:true});
+      }
+      window.addEventListener('load', reportHeight);
+    }());
+  </script>
+  <script src="https://elfsightcdn.com/platform.js" async></script>
+</body>
+</html>
